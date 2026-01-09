@@ -19,7 +19,7 @@ return {
             --- @type vim.diagnostic.Opts
             local default_opts = {
                 signs = {
-                    -- icons / text used for a diagnostic
+                    -- Icons / text used for a diagnostic
                     error = '',
                     warning = '',
                     hint = '',
@@ -37,11 +37,11 @@ return {
                 },
                 float = {
                     border = 'single', -- border style (default: "single")
-                    -- source = 'always', -- show source (default: "always")
+                    -- source = 'always', – show source (default: "always")
                     source = true,
                     width = 100, -- width of the output (default: 80)
                     height = 60, -- height of the output (default: 20)
-                    focusable = true, -- focusable (default: false)
+                    focusable = true,
                     wrap = true, -- wrap the lines (default: true)
                 },
             }

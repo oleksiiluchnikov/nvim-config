@@ -1,4 +1,13 @@
 local M = {}
+function M.has_words_before()
+    local line, col = unpack(vim.api.nvim_win_get_cursor(0))
+    return col ~= 0
+        and vim.api
+                .nvim_buf_get_lines(0, line - 1, line, true)[1]
+                :sub(col, col)
+                :match('%s')
+            == nil
+end
 
 --- Get start and end lines for code selection
 --- ```lua
@@ -27,9 +36,9 @@ function M.move_to_mark_and_center(args)
         vim.cmd('normal! g`"zz') -- move cursor to mark and center screen
     end
 end
---- Get the current visual selection formatted for markdown.
+--- Get the current visual selection formatted for Markdown.
 --- ```lua
---- local selection_in_fences = get_visual_selection_markdown(
+--- local selection_in_fences = get_visual_selection_Markdown(
 ---    'lua',
 ---    vim.api.nvim_get_current_buf(),
 ---    start_line,

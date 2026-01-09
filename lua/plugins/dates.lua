@@ -1,6 +1,7 @@
 return {
     {
         'oleksiiluchnikov/dates.nvim',
-        branch = 'dev',
+        branch = 'main',
+        dir = '~/projects/dates.nvim',
     },
 }

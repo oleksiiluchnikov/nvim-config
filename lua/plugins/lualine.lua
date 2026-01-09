@@ -6,6 +6,9 @@ return {
         'nvim-lualine/lualine.nvim',
         dependencies = {
             'piersolenski/wtf.nvim',
+            'lewis6991/gitsigns.nvim',
+            -- navic
+            'SmiteshP/nvim-navic',
         },
         opts = {
             options = {
@@ -28,24 +31,116 @@ return {
             },
             sections = {
                 lualine_a = {
-                    'mode',
+                    {
+                        'mode',
+                        fmt = function(str)
+                            return str
+                        end,
+                    },
                 },
                 lualine_b = {
+                    -- full cwd
                     function()
                         return vim.fn.getcwd()
                     end,
-                    'branch',
-                    'diff',
-                    'diagnostics',
+                    {
+                        'branch',
+                        icon = '󰘬',
+                    },
+                    {
+                        'diff',
+                        symbols = {
+                            added = '+',
+                            modified = '~',
+                            removed = '-',
+                        },
+                        source = function()
+                            local gitsigns = vim.b.gitsigns_status_dict
+                            if gitsigns then
+                                return {
+                                    added = gitsigns.added,
+                                    modified = gitsigns.changed,
+                                    removed = gitsigns.removed,
+                                }
+                            end
+                        end,
+                    },
+                    {
+                        'diagnostics',
+                        sources = { 'nvim_diagnostic' },
+                        sections = { 'error', 'warn', 'info', 'hint' },
+                        symbols = {
+                            error = '',
+                            warn = '',
+                            info = '',
+                            hint = '',
+                        },
+                        update_in_insert = true,
+                    },
                 },
-                -- lualine_b = { function() return vim.fn.getcwd():gsub(os.getenv('HOME'), '~') end, 'branch', 'diff', 'diagnostics' },
-                lualine_c = { { 'filename', path = 4 } },
+                lualine_c = {
+                    {
+                        'filename',
+                        path = 1,
+                        symbols = {
+                            modified = '*',
+                            readonly = '',
+                            unnamed = '[No Name]',
+                        },
+                    },
+                },
                 lualine_x = {
-                    'filetype',
+                    {
+                        function()
+                            local adapter = vim.g.codecompanion_initial_adapter
+                            if adapter then
+                                return adapter
+                            end
+                        end,
+                    },
+                    -- Filetype
+                    { 'filetype', colored = true },
                 },
-                lualine_y = {},
+                lualine_y = {
+                    -- Current function/method
+                    {
+                        function()
+                            local navic = require('nvim-navic')
+                            if navic.is_available() then
+                                local location = navic.get_location()
+                                return location ~= '' and location or ''
+                            end
+                            return ''
+                        end,
+                        cond = function()
+                            local navic = require('nvim-navic')
+                            return package.loaded['nvim-navic']
+                                and navic.is_available()
+                        end,
+                    },
+                },
                 lualine_z = {
-                    'location',
+                    -- Location in file
+                    {
+                        'location',
+                        fmt = function()
+                            local line = vim.fn.line('.')
+                            local total_lines = vim.fn.line('$')
+                            return string.format(
+                                '%d/%d:%-2d',
+                                line,
+                                total_lines,
+                                vim.fn.col('.')
+                            )
+                        end,
+                    },
+                    -- Progress percentage
+                    {
+                        'progress',
+                        fmt = function(str)
+                            return str .. ' '
+                        end,
+                    },
                 },
             },
             inactive_sections = {

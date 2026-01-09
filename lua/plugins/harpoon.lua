@@ -56,17 +56,24 @@ return {
                 end,
                 { silent = true, desc = 'go to terminal' },
             },
-            },
-            event = 'BufEnter',
-            config = function()
-                local harpoon = require('harpoon')
-                local keymap = vim.keymap.set
-                -- Harpoon file selection keybindings
-                for i = 1, 4 do
-                    keymap('n', '<C-' .. (i == 1 and 'e' or (i == 2 and 'a' or (i == 3 and 'h' or 'i'))) .. '>', function()
-                        harpoon:list():select(i)
-                    end, { silent = true, desc = 'navigate to harpoon file ' .. i })
-                end
-            end,
+        },
+        event = 'BufEnter',
+        -- config = function()
+        --     local harpoon = require('harpoon')
+        --     local keymap = vim.keymap.set
+        --     -- Harpoon file selection keybindings
+        --     for i = 1, 4 do
+        --         keymap(
+        --             'n',
+        --             '<C-'
+        --                 .. (i == 1 and 'e' or (i == 2 and 'a' or (i == 3 and 'h' or 'i')))
+        --                 .. '>',
+        --             function()
+        --                 harpoon:list():select(i)
+        --             end,
+        --             { silent = true, desc = 'navigate to harpoon file ' .. i }
+        --         )
+        --     end
+        -- end,
     },
 }

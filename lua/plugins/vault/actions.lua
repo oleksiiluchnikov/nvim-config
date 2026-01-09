@@ -247,7 +247,7 @@ function search.notes_with_daily_journal_tag()
     pickers.notes({
         notes = require('vault.notes')():filter({
             search_term = 'tags',
-            include = { 'type/Journal/Daily' },
+            include = { 'type/journal' },
             match_opt = 'startswith',
             mode = 'all',
             case_sensitive = false,

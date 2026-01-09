@@ -2,373 +2,373 @@
 -- Provides a completion engine for Neovim
 -----------------------------------------------------------------------
 return {
---     {
---         'hrsh7th/nvim-cmp',
---         opts = function(_, opts)
---             local icons = {
---                 Text = '',
---                 Method = '󰆧',
---                 Function = '󰊕',
---                 Constructor = '⌘',
---                 Field = '󰜢',
---                 Variable = '󰈜',
---                 Class = '󰠱',
---                 Interface = '',
---                 Module = '󰏗',
---                 Property = '󰜢',
---                 Unit = '󰑭',
---                 Value = '󰎠',
---                 Enum = '',
---                 Keyword = '󰔌',
---                 Snippet = '󰅱',
---                 Color = '󰏘',
---                 File = '󰈙',
---                 Reference = '󰈇',
---                 Folder = '',
---                 EnumMember = '',
---                 Constant = '󰐀',
---                 Struct = '󰙅',
---                 Event = '',
---                 Operator = '󰆕',
---                 TypeParameter = '',
---             }
---
---             local codicons = {
---                 Text = '  ',
---                 Method = '  ',
---                 Function = '  ',
---                 Constructor = '  ',
---                 Field = '  ',
---                 Variable = '  ',
---                 Class = '  ',
---                 Interface = '  ',
---                 Module = '  ',
---                 Property = '  ',
---                 Unit = '  ',
---                 Value = '  ',
---                 Enum = '  ',
---                 Keyword = '  ',
---                 Snippet = '  ',
---                 Color = '  ',
---                 File = '  ',
---                 Reference = '  ',
---                 Folder = '  ',
---                 EnumMember = '  ',
---                 Constant = '  ',
---                 Struct = '  ',
---                 Event = '  ',
---                 Operator = '  ',
---                 TypeParameter = '  ',
---             }
---             local options = {
---                 tab_complete_copilot_first = true,
---             }
---             local cmp = require('cmp')
---             ---@class cmp.ConfigSchema
---             opts = {
---
---                 snippet = {
---                     expand = function(args)
---                         require('luasnip').lsp_expand(args.body)
---                     end,
---                 },
---
---                 style = {
---                     scrollbar = '║',
---                     border = require('config.utils').styles.borders.solid,
---                 },
---
---                 formatting = {
---                     expandable_indicator = false,
---                     fields = { 'abbr', 'kind', 'menu' },
---                     ---@param entry cmp.Entry
---                     ---@param item vim.CompletedItem
---                     format = function(entry, item)
---                         if not item.kind then
---                             item.kind = 'Unknown'
---                         end
---                         item.menu_hl_group = 'CmpItemKind' .. item.kind
---                         local menu_icon = {
---                             cody = '[Cody]',
---                             copilot = '[Copilot]',
---                             -- supermaven = '[Supermaven]',
---                             nvim_lsp = '[LSP]',
---                             nvim_lua = '[Lua]',
---                             buffer = '[Buf]',
---                             lazydev = '[LazyDev]',
---                             luasnip = '[Snip]',
---                             path = '[Path]',
---                             neorg = '[Neorg]',
---                             vault_tag = '[Tag]',
---                             vault_date = '[Date]',
---                         }
---                         item.menu = menu_icon[entry.source.name]
---                         if item.kind == 'Text' then
---                             item.kind = ''
---                         end
---                         return item
---                     end,
---                 },
---                 window = {
---                     completion = {
---                         -- border = { "", "", "", "│", "╯", "─", "╰", "│" },
---                         -- square
---                         border = { '', '', '', '', '', '', '', '┃' }, -- or bolder border like:
---                         zindex = 50,
---                         col_offset = 0,
---                         side_padding = 0,
---                         scrollbar = true,
---                         scrolloff = 999,
---                         winhighlight = 'Normal:CmpMenu,FloatBorder:CmpMenuBorder,CursorLine:CmpSelection,Search:None',
---                         autocomplete = {
---                             require('cmp.types').cmp.TriggerEvent.InsertEnter,
---                             require('cmp.types').cmp.TriggerEvent.TextChanged,
---                         },
---                     },
---                     documentation = {
---                         border = { '', '', '', '║', '', '', '', '' },
---                         side_padding = 16,
---                         col_offset = 4,
---                         max_width = 0,
---                         max_height = 0,
---                         winhighlight = 'Normal:CmpMenu,FloatBorder:CmpMenuBorder,CursorLine:CmpSelection,Search:None',
---                     },
---                 },
---                 ghost_text = {
---                     enabled = false,
---                 },
---                 experimental = {
---                     ghost_text = false,
---                 },
---                 view = {
---                     entries = {
---                         name = 'custom',
---                         selection_order = 'near_cursor',
---                     },
---                     docs = {
---                         auto_open = true,
---                     },
---                 },
---                 sources = {
---                     { name = 'path' },
---                     { name = 'cody' },
---                     { name = 'copilot' },
---                     -- { name = 'supermaven' },
---                     { name = 'nvim_lsp' },
---                     { name = 'nvim_lsp_signature_help' },
---                     { name = 'nvim_lua' },
---                     { name = 'luasnip' },
---                     { name = 'buffer', group_index = 2 },
---                     { name = 'lazydev', group_index = 0 },
---                     { name = 'neorg' },
---                     { name = 'vault_tag' },
---                     { name = 'vault_date' },
---                     { name = 'vault_properties' },
---                     { name = 'vault_property_values' },
---                 },
---                 sorting = {
---                     priority_weight = 2,
---                     comparators = {
---                         -- order matters here
---                         cmp.config.compare.exact,
---                         cmp.config.compare.offset,
---                         cmp.config.compare.score,
---                         cmp.config.compare.recently_used,
---                         cmp.config.compare.locality,
---                         cmp.config.compare.kind,
---                         cmp.config.compare.sort_text,
---                         cmp.config.compare.length,
---                         cmp.config.compare.order,
---                     },
---                 },
---                 preselect = cmp.PreselectMode.Item,
---             }
---
---             cmp.setup(opts)
---             cmp.setup.filetype({ 'TelescopePrompt' }, opts)
---
---             --set max height of items
---             vim.cmd(
---                 [[ set pumheight=]]
---                     .. tostring(vim.api.nvim_list_uis()[1].height - 10)
---             )
---
---             vim.api.nvim_set_hl(0, 'CmpItemKindCody', { fg = 'Red' })
---
---             -- `:` cmdline setup.
---             cmp.setup.cmdline(':', {
---                 mapping = cmp.mapping.preset.cmdline(),
---                 sources = cmp.config.sources({
---                     { name = 'path' },
---                     { name = 'copilot' },
---                     { name = 'cody' },
---                 }, {
---                     {
---                         name = 'cmdline',
---                         option = {
---                             ignore_cmds = { 'Man', '!' },
---                         },
---                     },
---                 }),
---             })
---             -- `/` cmdline setup.
---             cmp.setup.cmdline('/', {
---                 mapping = cmp.mapping.preset.cmdline(),
---                 sources = {
---                     { name = 'buffer' },
---                     { name = 'cody' },
---                     { name = 'copilot' },
---                 },
---             })
---             cmp.setup.cmdline('?', {
---                 mapping = cmp.mapping.preset.cmdline(),
---                 sources = {
---                     { name = 'buffer' },
---                     { name = 'cody' },
---                     { name = 'copilot' },
---                 },
---             })
---             cmp.setup.cmdline('/', {
---                 mapping = cmp.mapping.preset.cmdline(),
---                 sources = {
---                     { name = 'buffer' },
---                     { name = 'cody' },
---                     { name = 'copilot' },
---                 },
---             })
---             cmp.setup.cmdline('!', {
---                 mapping = cmp.mapping.preset.cmdline(),
---                 sources = {
---                     { name = 'buffer' },
---                     { name = 'cody' },
---                     { name = 'copilot' },
---                 },
---             })
---         end,
---         keys = {
---             {
---                 '<C-y>',
---                 function(fallback)
---                 end,
---                 noremap = true,
---                 silent = true,
---                 desc = 'accept 1 word of suggestion',
---                 mode = { 'i', 'c' },
---             },
---             {
---                 '<C-c>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     local copilot_suggestion = require('copilot.suggestion')
---                     -- local supermaven_suggestion =
---                     --     require('supermaven-nvim.completion_preview')
---                     -- if supermaven_suggestion.has_suggestion() then
---                     --     supermaven_suggestion.on_accept_suggestion_line()
---                     if copilot_suggestion.is_visible() then
---                         copilot_suggestion.accept_line()
---                     elseif cmp.visible() then
---                         cmp.mapping.confirm({
---                             behavior = cmp.ConfirmBehavior.Replace,
---                             select = select,
---                         })()
---                     else
---                         fallback()
---                     end
---                 end,
---                 noremap = true,
---                 silent = true,
---                 desc = 'accept 1 line of suggestion',
---                 mode = { 'i', 'c' },
---             },
---             {
---                 '<C-j>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     local copilot_suggestion = require('copilot.suggestion')
---                     -- local supermaven_suggestion =
---                     --     require('supermaven-nvim.completion_preview')
---                     -- if supermaven_suggestion.has_suggestion() then
---                     --     supermaven_suggestion.on_accept_suggestion()
---                     if copilot_suggestion.is_visible() then
---                         copilot_suggestion.accept()
---                     elseif cmp.visible() then
---                         cmp.mapping.confirm({
---                             behavior = cmp.ConfirmBehavior.Replace,
---                             select = select,
---                         })()
---                     else
---                         fallback()
---                     end
---                 end,
---                 noremap = true,
---                 silent = true,
---                 desc = 'copilot: accept whole suggestion',
---                 mode = { 'i', 'c' },
---             },
---             {
---                 '<C-n>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     local copilot_suggestion = require('copilot.suggestion')
---                     -- local supermaven_suggestion =
---                     --     require('supermaven-nvim.completion_preview')
---                     -- if supermaven_suggestion.has_suggestion() then
---                     --     supermaven_suggestion.clear_suggestion()
---                     if copilot_suggestion.is_visible() then
---                         copilot_suggestion.next()
---                     elseif cmp.visible() then
---                         cmp.select_next_item()
---                     else
---                         fallback()
---                     end
---                 end,
---                 noremap = true,
---                 silent = true,
---                 desc = 'select next item with C-n(ext)',
---                 mode = { 'i', 'c', '!' },
---             },
---             {
---                 '<C-p>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     if cmp.visible() then
---                         cmp.select_prev_item()
---                     else
---                         fallback()
---                     end
---                 end,
---                 silent = true,
---                 desc = 'select previous item with C-p(revious)',
---                 mode = 'i',
---             },
---             {
---                 '<C-u>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     if cmp.visible() then
---                         cmp.scroll_docs(4)
---                     else
---                         fallback()
---                     end
---                 end,
---                 silent = true,
---                 desc = 'scroll documentation / diagnostic preview down in insert mode',
---                 mode = 'i',
---             },
---             {
---                 '<C-d>',
---                 function(fallback)
---                     local cmp = require('cmp')
---                     if cmp.visible() then
---                         cmp.scroll_docs(-4)
---                     else
---                         fallback()
---                     end
---                 end,
---                 silent = true,
---                 desc = 'scroll documentation / diagnostic preview up in insert mode',
---                 mode = 'i',
---             },
---         },
---     },
+    --     {
+    --         'hrsh7th/nvim-cmp',
+    --         opts = function(_, opts)
+    --             local icons = {
+    --                 Text = '',
+    --                 Method = '󰆧',
+    --                 Function = '󰊕',
+    --                 Constructor = '⌘',
+    --                 Field = '󰜢',
+    --                 Variable = '󰈜',
+    --                 Class = '󰠱',
+    --                 Interface = '',
+    --                 Module = '󰏗',
+    --                 Property = '󰜢',
+    --                 Unit = '󰑭',
+    --                 Value = '󰎠',
+    --                 Enum = '',
+    --                 Keyword = '󰔌',
+    --                 Snippet = '󰅱',
+    --                 Color = '󰏘',
+    --                 File = '󰈙',
+    --                 Reference = '󰈇',
+    --                 Folder = '',
+    --                 EnumMember = '',
+    --                 Constant = '󰐀',
+    --                 Struct = '󰙅',
+    --                 Event = '',
+    --                 Operator = '󰆕',
+    --                 TypeParameter = '',
+    --             }
+    --
+    --             local codicons = {
+    --                 Text = '  ',
+    --                 Method = '  ',
+    --                 Function = '  ',
+    --                 Constructor = '  ',
+    --                 Field = '  ',
+    --                 Variable = '  ',
+    --                 Class = '  ',
+    --                 Interface = '  ',
+    --                 Module = '  ',
+    --                 Property = '  ',
+    --                 Unit = '  ',
+    --                 Value = '  ',
+    --                 Enum = '  ',
+    --                 Keyword = '  ',
+    --                 Snippet = '  ',
+    --                 Color = '  ',
+    --                 File = '  ',
+    --                 Reference = '  ',
+    --                 Folder = '  ',
+    --                 EnumMember = '  ',
+    --                 Constant = '  ',
+    --                 Struct = '  ',
+    --                 Event = '  ',
+    --                 Operator = '  ',
+    --                 TypeParameter = '  ',
+    --             }
+    --             local options = {
+    --                 tab_complete_copilot_first = true,
+    --             }
+    --             local cmp = require('cmp')
+    --             ---@class cmp.ConfigSchema
+    --             opts = {
+    --
+    --                 snippet = {
+    --                     expand = function(args)
+    --                         require('luasnip').lsp_expand(args.body)
+    --                     end,
+    --                 },
+    --
+    --                 style = {
+    --                     scrollbar = '║',
+    --                     border = require('config.utils').styles.borders.solid,
+    --                 },
+    --
+    --                 formatting = {
+    --                     expandable_indicator = false,
+    --                     fields = { 'abbr', 'kind', 'menu' },
+    --                     ---@param entry cmp.Entry
+    --                     ---@param item vim.CompletedItem
+    --                     format = function(entry, item)
+    --                         if not item.kind then
+    --                             item.kind = 'Unknown'
+    --                         end
+    --                         item.menu_hl_group = 'CmpItemKind' .. item.kind
+    --                         local menu_icon = {
+    --                             cody = '[Cody]',
+    --                             copilot = '[Copilot]',
+    --                             -- supermaven = '[Supermaven]',
+    --                             nvim_lsp = '[LSP]',
+    --                             nvim_lua = '[Lua]',
+    --                             buffer = '[Buf]',
+    --                             lazydev = '[LazyDev]',
+    --                             luasnip = '[Snip]',
+    --                             path = '[Path]',
+    --                             neorg = '[Neorg]',
+    --                             vault_tag = '[Tag]',
+    --                             vault_date = '[Date]',
+    --                         }
+    --                         item.menu = menu_icon[entry.source.name]
+    --                         if item.kind == 'Text' then
+    --                             item.kind = ''
+    --                         end
+    --                         return item
+    --                     end,
+    --                 },
+    --                 window = {
+    --                     completion = {
+    --                         -- border = { "", "", "", "│", "╯", "─", "╰", "│" },
+    --                         -- square
+    --                         border = { '', '', '', '', '', '', '', '┃' }, -- or bolder border like:
+    --                         zindex = 50,
+    --                         col_offset = 0,
+    --                         side_padding = 0,
+    --                         scrollbar = true,
+    --                         scrolloff = 999,
+    --                         winhighlight = 'Normal:CmpMenu,FloatBorder:CmpMenuBorder,CursorLine:CmpSelection,Search:None',
+    --                         autocomplete = {
+    --                             require('cmp.types').cmp.TriggerEvent.InsertEnter,
+    --                             require('cmp.types').cmp.TriggerEvent.TextChanged,
+    --                         },
+    --                     },
+    --                     documentation = {
+    --                         border = { '', '', '', '║', '', '', '', '' },
+    --                         side_padding = 16,
+    --                         col_offset = 4,
+    --                         max_width = 0,
+    --                         max_height = 0,
+    --                         winhighlight = 'Normal:CmpMenu,FloatBorder:CmpMenuBorder,CursorLine:CmpSelection,Search:None',
+    --                     },
+    --                 },
+    --                 ghost_text = {
+    --                     enabled = false,
+    --                 },
+    --                 experimental = {
+    --                     ghost_text = false,
+    --                 },
+    --                 view = {
+    --                     entries = {
+    --                         name = 'custom',
+    --                         selection_order = 'near_cursor',
+    --                     },
+    --                     docs = {
+    --                         auto_open = true,
+    --                     },
+    --                 },
+    --                 sources = {
+    --                     { name = 'path' },
+    --                     { name = 'cody' },
+    --                     { name = 'copilot' },
+    --                     -- { name = 'supermaven' },
+    --                     { name = 'nvim_lsp' },
+    --                     { name = 'nvim_lsp_signature_help' },
+    --                     { name = 'nvim_lua' },
+    --                     { name = 'luasnip' },
+    --                     { name = 'buffer', group_index = 2 },
+    --                     { name = 'lazydev', group_index = 0 },
+    --                     { name = 'neorg' },
+    --                     { name = 'vault_tag' },
+    --                     { name = 'vault_date' },
+    --                     { name = 'vault_properties' },
+    --                     { name = 'vault_property_values' },
+    --                 },
+    --                 sorting = {
+    --                     priority_weight = 2,
+    --                     comparators = {
+    --                         -- order matters here
+    --                         cmp.config.compare.exact,
+    --                         cmp.config.compare.offset,
+    --                         cmp.config.compare.score,
+    --                         cmp.config.compare.recently_used,
+    --                         cmp.config.compare.locality,
+    --                         cmp.config.compare.kind,
+    --                         cmp.config.compare.sort_text,
+    --                         cmp.config.compare.length,
+    --                         cmp.config.compare.order,
+    --                     },
+    --                 },
+    --                 preselect = cmp.PreselectMode.Item,
+    --             }
+    --
+    --             cmp.setup(opts)
+    --             cmp.setup.filetype({ 'TelescopePrompt' }, opts)
+    --
+    --             --set max height of items
+    --             vim.cmd(
+    --                 [[ set pumheight=]]
+    --                     .. tostring(vim.api.nvim_list_uis()[1].height - 10)
+    --             )
+    --
+    --             vim.api.nvim_set_hl(0, 'CmpItemKindCody', { fg = 'Red' })
+    --
+    --             -- `:` cmdline setup.
+    --             cmp.setup.cmdline(':', {
+    --                 mapping = cmp.mapping.preset.cmdline(),
+    --                 sources = cmp.config.sources({
+    --                     { name = 'path' },
+    --                     { name = 'copilot' },
+    --                     { name = 'cody' },
+    --                 }, {
+    --                     {
+    --                         name = 'cmdline',
+    --                         option = {
+    --                             ignore_cmds = { 'Man', '!' },
+    --                         },
+    --                     },
+    --                 }),
+    --             })
+    --             -- `/` cmdline setup.
+    --             cmp.setup.cmdline('/', {
+    --                 mapping = cmp.mapping.preset.cmdline(),
+    --                 sources = {
+    --                     { name = 'buffer' },
+    --                     { name = 'cody' },
+    --                     { name = 'copilot' },
+    --                 },
+    --             })
+    --             cmp.setup.cmdline('?', {
+    --                 mapping = cmp.mapping.preset.cmdline(),
+    --                 sources = {
+    --                     { name = 'buffer' },
+    --                     { name = 'cody' },
+    --                     { name = 'copilot' },
+    --                 },
+    --             })
+    --             cmp.setup.cmdline('/', {
+    --                 mapping = cmp.mapping.preset.cmdline(),
+    --                 sources = {
+    --                     { name = 'buffer' },
+    --                     { name = 'cody' },
+    --                     { name = 'copilot' },
+    --                 },
+    --             })
+    --             cmp.setup.cmdline('!', {
+    --                 mapping = cmp.mapping.preset.cmdline(),
+    --                 sources = {
+    --                     { name = 'buffer' },
+    --                     { name = 'cody' },
+    --                     { name = 'copilot' },
+    --                 },
+    --             })
+    --         end,
+    --         keys = {
+    --             {
+    --                 '<C-y>',
+    --                 function(fallback)
+    --                 end,
+    --                 noremap = true,
+    --                 silent = true,
+    --                 desc = 'accept 1 word of suggestion',
+    --                 mode = { 'i', 'c' },
+    --             },
+    --             {
+    --                 '<C-c>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     local copilot_suggestion = require('copilot.suggestion')
+    --                     -- local supermaven_suggestion =
+    --                     --     require('supermaven-nvim.completion_preview')
+    --                     -- if supermaven_suggestion.has_suggestion() then
+    --                     --     supermaven_suggestion.on_accept_suggestion_line()
+    --                     if copilot_suggestion.is_visible() then
+    --                         copilot_suggestion.accept_line()
+    --                     elseif cmp.visible() then
+    --                         cmp.mapping.confirm({
+    --                             behavior = cmp.ConfirmBehavior.Replace,
+    --                             select = select,
+    --                         })()
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 noremap = true,
+    --                 silent = true,
+    --                 desc = 'accept 1 line of suggestion',
+    --                 mode = { 'i', 'c' },
+    --             },
+    --             {
+    --                 '<C-j>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     local copilot_suggestion = require('copilot.suggestion')
+    --                     -- local supermaven_suggestion =
+    --                     --     require('supermaven-nvim.completion_preview')
+    --                     -- if supermaven_suggestion.has_suggestion() then
+    --                     --     supermaven_suggestion.on_accept_suggestion()
+    --                     if copilot_suggestion.is_visible() then
+    --                         copilot_suggestion.accept()
+    --                     elseif cmp.visible() then
+    --                         cmp.mapping.confirm({
+    --                             behavior = cmp.ConfirmBehavior.Replace,
+    --                             select = select,
+    --                         })()
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 noremap = true,
+    --                 silent = true,
+    --                 desc = 'copilot: accept whole suggestion',
+    --                 mode = { 'i', 'c' },
+    --             },
+    --             {
+    --                 '<C-n>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     local copilot_suggestion = require('copilot.suggestion')
+    --                     -- local supermaven_suggestion =
+    --                     --     require('supermaven-nvim.completion_preview')
+    --                     -- if supermaven_suggestion.has_suggestion() then
+    --                     --     supermaven_suggestion.clear_suggestion()
+    --                     if copilot_suggestion.is_visible() then
+    --                         copilot_suggestion.next()
+    --                     elseif cmp.visible() then
+    --                         cmp.select_next_item()
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 noremap = true,
+    --                 silent = true,
+    --                 desc = 'select next item with C-n(ext)',
+    --                 mode = { 'i', 'c', '!' },
+    --             },
+    --             {
+    --                 '<C-p>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     if cmp.visible() then
+    --                         cmp.select_prev_item()
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 silent = true,
+    --                 desc = 'select previous item with C-p(revious)',
+    --                 mode = 'i',
+    --             },
+    --             {
+    --                 '<C-u>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     if cmp.visible() then
+    --                         cmp.scroll_docs(4)
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 silent = true,
+    --                 desc = 'scroll documentation / diagnostic preview down in insert mode',
+    --                 mode = 'i',
+    --             },
+    --             {
+    --                 '<C-d>',
+    --                 function(fallback)
+    --                     local cmp = require('cmp')
+    --                     if cmp.visible() then
+    --                         cmp.scroll_docs(-4)
+    --                     else
+    --                         fallback()
+    --                     end
+    --                 end,
+    --                 silent = true,
+    --                 desc = 'scroll documentation / diagnostic preview up in insert mode',
+    --                 mode = 'i',
+    --             },
+    --         },
+    --     },
 }

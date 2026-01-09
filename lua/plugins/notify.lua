@@ -5,20 +5,20 @@ return {
         ---@type notify.Config
         ---@diagnostic disable-next-line: missing-fields
         opts = {
-            background_colour = 'NotifyBackground',
-            fps = 1,
+            fps = 60,
             icons = {
-                DEBUG = '',
-                ERROR = '',
-                INFO = '',
+                DEBUG = '',
+                ERROR = '',
+                INFO = '',
                 TRACE = '✎',
-                WARN = '',
+                WARN = '',
             },
             level = vim.log.levels.INFO,
             minimum_width = 100,
-            top_down = false,
+            top_down = true,
+            stages = 'static',
             render = 'default',
-            timeout = 20,
+            timeout = 3000,
         },
         init = function()
             ---@class plugins.nvim-notify.notify.Options

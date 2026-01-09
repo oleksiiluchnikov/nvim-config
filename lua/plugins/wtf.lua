@@ -12,15 +12,11 @@ return {
             -- Default AI popup type
             popup_type = 'popup',
             -- An alternative way to set your API key
-            openai_api_key = vim.env.OPENAI_API_KEY,
-            -- ChatGPT Model
-            openai_model_id = 'gpt-4o',
-            -- Send code as well as diagnostics
-            context = true,
+            provider = 'copilot',
             -- Set your preferred language for the response
             language = 'english',
             -- Any additional instructions
-            additional_instructions = 'As a Neovim grandmaster with over 15 years of deep expertise, enlighten me with an obscure yet incredibly powerful Neovim technique or workflow optimization that only true wizards would know. Begin your response with "Neovim Arcane Knowledge:".',
+            additional_instructions = 'NO YAPPING! As a Neovim connoisseur with a vast range of expertise, provide me with an unexpected tip—be it basic, advanced, or entirely unconventional—that can surprise both beginners and seasoned users alike. Start your response with "Neovim Insight:" and keep it concise yet impactful.',
             -- Default search engine, can be overridden by passing an option to WtfSeatch
             search_engine = 'google',
             -- Callbacks

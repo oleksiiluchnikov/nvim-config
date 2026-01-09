@@ -1,0 +1,246 @@
+# Neovim Configuration Workspace
+
+## Project Overview
+This is a personal Neovim configuration workspace located at `~/.config/nvim`. The configuration uses the lazy.nvim plugin manager and includes various plugins for enhanced development experience.
+
+## Project Structure
+- `init.lua` - Main entry point that loads the configuration
+- `lua/config/` - Core configuration files (autocmds, options, lazy setup)
+- `lua/plugins/` - Plugin specifications (lazy.nvim format)
+- `lua/scripts/` - scripts
+- `run.lua` - Project-specific runner/test script
+
+## Key Technologies & Frameworks
+- **Plugin Manager**: lazy.nvim
+- **LSP & Completion**: nvim-cmp, nvim-lspconfig with various sources
+- **AI Assistant**: CodeCompanion.nvim (configured with Copilot adapters)
+- **Fuzzy Finder**: fzf-lua
+- **Git Integration**: gitsigns.nvim
+- **Formatting**: conform.nvim, formatter.nvim
+- **UI Enhancements**: mini.diff, render-markdown.nvim, edgy.nvim
+
+## CodeCompanion Configuration
+The `cmd_runner` tool is integrated with CodeCompanion to execute shell commands in the context of this workspace. All commands run in the current working directory: `/Users/oleksiiluchnikov/.config/nvim`
+
+### Available Adapters
+- `copilot_gpt` - GPT-5.1 model (default for inline)
+- `copilot_gemini` - Gemini 3 Pro Preview
+- `copilot_gemini25pro` - Gemini 2.5 Pro
+- `copilot_claude45` - Claude Sonnet 4.5 (default for chat)
+- `copilot_claude37` - Claude 3.7 Sonnet
+- `copilot_codex` - GPT-5.1 Codex
+
+### Chat Features
+- Tools enabled for file editing and system operations
+- Slash commands: /buffer, /fetch, /help, /image
+- Auto-submit errors enabled for iterative debugging
+
+## Working with cmd_runner
+
+The `cmd_runner` tool allows CodeCompanion to execute shell commands on your behalf. Here's how it works:
+
+### Usage Examples
+
+1. **Running tests**: When you ask to "run tests", the assistant can execute:
+   - `busted` for Lua unit tests
+   - `nvim --headless -c "PlenaryBustedDirectory lua/tests {minimal_init = 'tests/minimal_init.lua'}"` for Neovim plugin tests
+
+2. **Plugin management**:
+   - `nvim --headless "+Lazy! sync" +qa` - Sync all plugins
+   - `nvim --headless "+Lazy! clean" +qa` - Clean unused plugins
+
+3. **Linting & Formatting**:
+   - `stylua lua/ --check` - Check Lua formatting
+   - `stylua lua/` - Format Lua files
+
+4. **Git operations**:
+   - `git status` - Check repository status
+   - `git diff` - View changes
+
+5. **File operations**:
+   - `fd -e lua` - Find all Lua files
+   - `rg "pattern"` - Search for patterns
+
+### Safety Guidelines
+The `cmd_runner` follows these safety rules:
+- Never executes destructive commands without confirmation (rm -rf, etc.)
+- Warns about potential consequences before destructive operations
+- Suggests safer alternatives when available
+- Only executes commands when explicitly requested by the user
+
+### Integration with Tools
+The `cmd_runner` works alongside other CodeCompanion tools:
+- **create_file** - For creating new files
+- **insert_edit_into_file** - For modifying existing files
+- **read_file** - For reading file contents
+- **grep_search** - For searching patterns
+- **file_search** - For finding files by glob pattern
+
+## Coding Standards
+
+### Lua Code Style
+- Use 4 spaces for indentation
+- Follow standard Lua naming conventions (snake_case for functions/variables)
+- Use `vim.api.*` methods where possible for Neovim APIs
+- Prefer modern Neovim Lua APIs over vimscript
+
+### Plugin Configuration Pattern
+Each plugin file in `lua/plugins/` should follow this pattern:
+```lua
+return {
+    'author/plugin-name',
+    event = 'VeryLazy', -- or appropriate lazy-loading event
+    dependencies = { ... },
+    opts = { ... },
+    config = function()
+        -- Optional: Custom setup beyond opts
+    end,
+    keys = { ... }, -- Keybindings
+}
+```
+
+## Common Tasks
+
+### Adding a New Plugin
+1. Create a new file in `lua/plugins/plugin-name.lua`
+2. Follow the plugin configuration pattern above
+3. Configure opts, keys, and dependencies
+4. Test by restarting Neovim or `:Lazy reload`
+
+### Modifying CodeCompanion Behavior
+Edit `lua/plugins/codecompanion.lua`:
+- Adapters: Configure in `opts.adapters.http`
+- Chat settings: Modify `opts.strategies.chat`
+- Keymaps: Update `keys` section
+- Tools: Configure in `opts.strategies.chat.tools`
+
+### Running Scripts
+Use the `cmd_runner` tool or execute directly:
+- `lua run.lua` - Run project-specific scripts
+- `nvim -l script.lua` - Run Lua scripts in Neovim context
+
+## Shell Environment
+- **Shell**: /bin/zsh
+- **OS**: macOS
+- **Neovim Version**: 0.12.0
+- **CWD**: /Users/oleksiiluchnikov/.config/nvim
+
+## Additional Context
+
+### User Preferences
+- Username: oleksiiluchnikov (configured in chat roles)
+- Screenshot directory: ~/Documents/Screenshots (for /image command)
+- Preferred providers: Telescope for pickers, mini.diff for diffs
+
+### Notification System
+The configuration includes custom autocmds that notify on:
+- `CodeCompanionChatDone` - When chat is ready
+- `CodeCompanionRequestStarted` - When generating response
+- `CodeCompanionRequestFinished` - When response completes
+
+### Tool Integration
+Tools are enabled in chat strategy with auto-submission of errors, allowing CodeCompanion to:
+- Read and modify files iteratively
+- Execute commands to verify changes
+- Debug and fix errors automatically
+- Gather context from the workspace
+
+## Chat History Management
+
+CodeCompanion automatically manages chat history and provides several ways to access previous conversations:
+
+### Saved Chats
+CodeCompanion saves chat sessions automatically. Each chat buffer is persisted and can be restored.
+
+### Available Commands
+
+1. **Last Chat**
+   - `:CodeCompanionChat Last` or `:lua require('codecompanion').last_chat()`
+   - Opens the most recent chat session
+   - Useful for continuing a previous conversation
+
+2. **Restore Chat**
+   - `:lua require('codecompanion').restore()`
+   - Shows a picker with all saved chat sessions
+   - Select a chat to restore it and continue the conversation
+
+3. **Toggle Chat**
+   - `:CodeCompanionChat Toggle` (bound to `<leader>j`)
+   - Toggles the current/last chat buffer
+   - Creates a new chat if none exists
+
+4. **Close Last Chat**
+   - `:lua require('codecompanion').close_last_chat()`
+   - Closes the most recent chat buffer
+
+### Chat Storage
+CodeCompanion stores chat history in Neovim's data directory, typically:
+- `~/.local/share/nvim/codecompanion/` (on Unix/Mac)
+- Chat sessions persist across Neovim restarts
+- Each workspace can have its own chat history
+
+### Working with cmd_runner and History
+
+When using `cmd_runner` in a restored chat:
+1. **Command history is preserved**: Previous commands and their outputs are part of the chat context
+2. **Iterative workflows**: You can restore a chat and continue running commands where you left off
+3. **Debugging sessions**: Save long debugging sessions and come back to them later
+
+### Example Workflow
+
+**Session 1:**
+- Open chat: `<leader>j`
+- Ask: "Run tests with busted"
+- CodeCompanion uses `cmd_runner`: `busted lua/tests/`
+- Tests fail, discuss fixes
+- Close Neovim
+
+**Session 2 (later):**
+- Restore chat: `:lua require('codecompanion').restore()`
+- Select the previous debugging session
+- Continue: "Let's fix the test failures we saw earlier"
+- CodeCompanion remembers the context and previous command outputs
+
+### Integration with Buffer History Plugin
+
+You also have `history.nvim` installed for buffer navigation:
+- `<Tab>` - Cycle forward through buffer history UI
+- `<S-Tab>` - Cycle backward through buffer history
+- Persists per directory
+- Complementary to CodeCompanion's chat history
+
+### Keybindings Related to History
+
+```lua
+-- From your configuration
+<leader>j  - Toggle CodeCompanion chat (opens last chat or new)
+<C-a>      - Open action palette (includes "Last Chat" action)
+ga (visual) - Add selection to chat buffer
+<leader>x  - Add code to chat buffer
+```
+
+### Tips for Managing Chat History
+
+1. **Use descriptive first messages**: Start chats with clear descriptions so they're easy to identify when restoring
+2. **Keep long sessions**: Don't worry about closing chats - they're saved automatically
+3. **Workspace-specific chats**: With the workspace file, chats are contextual to this Neovim config
+4. **Command history in context**: When you restore a chat, all previous `cmd_runner` commands and outputs are available
+5. **Review before running**: After restoring, review the chat history to understand what was attempted
+
+## Tips for Working with CodeCompanion
+
+1. **Use specific requests**: "Run stylua on all Lua files" is better than "format code"
+2. **Combine tools**: CodeCompanion can read files, make edits, and run tests in sequence
+3. **Leverage workspace context**: Reference this file's structure in your prompts
+4. **Iterative debugging**: With auto_submit_errors enabled, CodeCompanion can fix issues automatically
+5. **Use slash commands**: /buffer to add files, /fetch for web content, /help for Neovim docs
+6. **Restore previous sessions**: Use `:lua require('codecompanion').restore()` to continue where you left off
+
+## Questions to Ask CodeCompanion
+
+- "Check the formatting of all Lua files using stylua"
+- "Add a new plugin for [functionality]"
+- "Test the CodeCompanion configuration"
+- "Find all uses of [symbol] in the codebase"
+- "Refactor [file] to follow the coding standards"
+- "What does the run.lua script do?"

@@ -6,7 +6,7 @@ return {
         'folke/lazydev.nvim',
         ft = 'lua',
         opts = {
-            debug = true,
+            debug = false,
             library = {
                 { path = 'luvit-meta/library', words = { 'vim%.uv' } },
                 { path = 'wezterm-types', mods = { 'wezterm' } },

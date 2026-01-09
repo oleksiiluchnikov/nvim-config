@@ -1,7 +1,8 @@
 return {
     {
         'oleksiiluchnikov/vault.nvim',
-        branch = 'dev',
+        -- branch = 'dev',
+        dir = '~/projects/vault.nvim',
         opts = function(_, opts)
             local mappings = {
                 {
@@ -92,21 +93,17 @@ return {
 
             --- @type vault.Config.options
             opts = {
+                root = '~/knowledge', -- The root directory of the vault.
                 features = {
                     commands = true,
                     cmp = true,
                 },
-                root = '~/knowledge', -- The root directory of the vault.
                 dirs = {
-                    inbox = 'inbox',
                     docs = '_docs',
-                    templates = '_templates',
+                    templates = 'Templates',
                     journal = {
-                        root = 'Journal',
-                        daily = 'Journal/Daily',
-                        weekly = 'Journal/Weekly',
-                        monthly = 'Journal/Monthly',
-                        yearly = 'Journal/Yearly',
+                        root = 'Daily',
+                        daily = 'Daily',
                     },
                 },
                 ignore = {
@@ -114,6 +111,8 @@ return {
                     '.obsidian/*',
                     '_docs/*',
                     '_templates/*',
+                    '_Legacy/*',
+                    'node_modules/*',
                     '.trash/*',
                 },
                 ext = '.md',
@@ -133,65 +132,65 @@ return {
                 notify = {
                     on_write = true,
                 },
-                popups = {
-                    fleeting_note = {
-                        title = {
-                            text = 'Fleeting Note',
-                            preview = 'border', -- "border" | "prompt" | "none"
-                        },
-                        editor = { -- @see :h nui.popup
-                            position = {
-                                row = math.floor(vim.o.lines / 2) - 9,
-                                col = math.floor(vim.o.columns / 2) - 40,
-                            },
-                            size = {
-                                height = 6,
-                                width = 80,
-                            },
-                            enter = true,
-                            focusable = true,
-                            zindex = 60,
-                            relative = 'editor',
-                            border = {
-                                padding = {
-                                    top = 0,
-                                    bottom = 0,
-                                    left = 0,
-                                    right = 0,
-                                },
-                                -- T shape side border: ├
-                                style = 'rounded',
-                            },
-                            buf_options = {
-                                modifiable = true,
-                                readonly = false,
-                                filetype = 'markdown',
-                                buftype = 'nofile',
-                                swapfile = false,
-                                bufhidden = 'wipe',
-                            },
-                            win_options = {
-                                winhighlight = 'Normal:Normal,FloatBorder:FloatBorder',
-                            },
-                        },
-                        prompt = {
-                            hidden = true,
-                            size = {
-                                height = 0.8,
-                                width = 0.8,
-                            },
-                        },
-                        results = {
-                            size = {
-                                height = 10,
-                                width = 80,
-                            },
-                        },
-                    },
-                },
+                -- popups = {
+                --     fleeting_note = {
+                --         title = {
+                --             text = 'Fleeting Note',
+                --             preview = 'border', -- "border" | "prompt" | "none"
+                --         },
+                --         editor = { -- @see :h nui.popup
+                --             position = {
+                --                 row = math.floor(vim.o.lines / 2) - 9,
+                --                 col = math.floor(vim.o.columns / 2) - 40,
+                --             },
+                --             size = {
+                --                 height = 6,
+                --                 width = 80,
+                --             },
+                --             enter = true,
+                --             focusable = true,
+                --             zindex = 60,
+                --             relative = 'editor',
+                --             border = {
+                --                 padding = {
+                --                     top = 0,
+                --                     bottom = 0,
+                --                     left = 0,
+                --                     right = 0,
+                --                 },
+                --                 -- T shape side border: ├
+                --                 style = 'rounded',
+                --             },
+                --             buf_options = {
+                --                 modifiable = true,
+                --                 readonly = false,
+                --                 filetype = 'markdown',
+                --                 buftype = 'nofile',
+                --                 swapfile = false,
+                --                 bufhidden = 'wipe',
+                --             },
+                --             win_options = {
+                --                 winhighlight = 'Normal:Normal,FloatBorder:FloatBorder',
+                --             },
+                --         },
+                --         prompt = {
+                --             hidden = true,
+                --             size = {
+                --                 height = 0.8,
+                --                 width = 0.8,
+                --             },
+                --         },
+                --         results = {
+                --             size = {
+                --                 height = 10,
+                --                 width = 80,
+                --             },
+                --         },
+                --     },
+                -- },
             }
 
-            require('vault').setup(opts)
+            return opts
         end,
     },
 }

@@ -1,0 +1,662 @@
+return {
+    {
+        'VonHeikemen/lsp-zero.nvim',
+        dependencies = { 'netmute/ctags-lsp.nvim' },
+        config = function()
+            -- Suppress deprecation warnings temporarily
+            vim.deprecate = function() end
+
+            local lsp_zero = require('lsp-zero')
+            lsp_zero.extend_lspconfig()
+
+            local mason = require('mason')
+            mason.setup()
+
+            local mason_lspconfig = require('mason-lspconfig')
+            mason_lspconfig.setup()
+
+            --- Main on_attach function
+            ---@param client vim.lsp.Client
+            ---@param bufnr number
+            local on_attach_lsp = function(client, bufnr)
+                if client.supports_method('textDocument/inlayHint') then
+                    pcall(require, 'lsp-inlayhints')
+                    if package.loaded['lsp-inlayhints'] then
+                        require('lsp-inlayhints').on_attach(client, bufnr)
+                    end
+                end
+
+                vim.bo[bufnr].omnifunc = 'v:lua.vim.lsp.omnifunc'
+                local opts = { buffer = bufnr, remap = false }
+
+                -- Diagnostics
+                vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, {
+                    desc = 'open diagnostics in float window',
+                    noremap = true,
+                })
+
+                vim.keymap.set('n', '[d', function()
+                    if require('trouble').is_open() then
+                        local trouble_last = require('trouble')._find_last()
+                        if trouble_last then
+                            require('trouble').next(trouble_last, {
+                                skip_groups = true,
+                                jump = true,
+                            })
+                        end
+                    else
+                        vim.diagnostic.jump({
+                            count = -1,
+                            popup_opts = { border = 'rounded' },
+                        })
+                    end
+                end, { desc = 'go to previous diagnostic', noremap = true })
+
+                vim.keymap.set('n', ']d', function()
+                    if require('trouble').is_open() then
+                        local trouble_last = require('trouble')._find_last()
+                        if trouble_last then
+                            require('trouble').prev(trouble_last, {
+                                skip_groups = true,
+                                jump = true,
+                            })
+                        end
+                    else
+                        vim.diagnostic.jump({
+                            count = 1,
+                            popup_opts = { border = 'rounded' },
+                        })
+                    end
+                end, { desc = 'go to next diagnostic', noremap = true })
+
+                vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist,
+                    { desc = 'set loclist', noremap = true })
+
+                -- Custom search definition keymap
+                vim.keymap.set('n', '<leader>gd', function()
+                    local root_dir = vim.lsp.get_client_by_id(client.id).root_dir
+                        or vim.fn.getcwd()
+                    vim.cmd('cd ' .. root_dir)
+
+                    local current_search
+                    local ts_node = vim.treesitter.get_node()
+                    if ts_node then
+                        current_search = vim.treesitter.get_node_text(ts_node, vim.fn.bufnr())
+                        if current_search == '' then
+                            current_search = vim.fn.expand('<cword>')
+                        end
+                    else
+                        current_search = vim.fn.expand('<cword>')
+                    end
+
+                    if type(current_search) == 'string' and not string.find(current_search, '\n') then
+                        require('telescope.builtin').grep_string({
+                            search_dirs = { root_dir },
+                            word_match = '-w',
+                            default_text = current_search,
+                            path_display = { 'truncate' },
+                        })
+                    end
+                end, { desc = 'find definitions', noremap = true })
+
+                vim.keymap.set('v', '<leader>gd', function()
+                    local root_dir = vim.fs.root(0, '.git') or vim.fn.getcwd()
+                    vim.cmd('cd ' .. root_dir)
+                    local current_search = vim.fn.getreg('g')
+                    require('telescope.builtin').grep_string({
+                        search_dirs = { root_dir },
+                        default_text = current_search,
+                        word_match = '-w',
+                        path_display = { 'smart' },
+                        initial_mode = 'normal',
+                    })
+                end, { desc = 'find definitions', noremap = true })
+
+                -- Standard LSP mappings
+                vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, opts)
+                vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+                vim.keymap.set('n', 'gt', vim.lsp.buf.type_definition, opts)
+                vim.keymap.set('n', 'K', vim.lsp.buf.hover, opts)
+                vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, opts)
+                vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+                vim.keymap.set('n', '<leader>wa', vim.lsp.buf.add_workspace_folder, opts)
+                vim.keymap.set('n', '<leader>wr', vim.lsp.buf.remove_workspace_folder, opts)
+                vim.keymap.set('n', '<leader>wl', function()
+                    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+                end, opts)
+                vim.keymap.set('n', '<leader>D', vim.lsp.buf.type_definition, opts)
+                vim.keymap.set('n', '<leader>rn', vim.lsp.buf.rename, opts)
+                vim.keymap.set({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
+                vim.keymap.set('n', 'gr', function()
+                    require('telescope.builtin').lsp_references({
+                        default_text = vim.fn.expand('<cword>'),
+                    })
+                end, { desc = 'find references', noremap = true })
+                vim.keymap.set('n', '<leader>f', function()
+                    vim.lsp.buf.format({ async = true })
+                end, opts)
+            end
+
+            vim.opt.signcolumn = 'yes'
+
+            -- Helper functions
+            local function is_my_spoon(file_path)
+                local function check_pattern(pattern)
+                    return vim.fn.systemlist({ 'grep', '-q', '-E', pattern, file_path })
+                end
+
+                local username = vim.fn.system('whoami'):gsub('[\n\r]', '')
+                local fullname = vim.fn.system('git config --get user.name'):gsub('[\n\r]', '')
+                local email = vim.fn.system('git config --get user.email'):gsub('[\n\r]', '')
+
+                for _, identifier in ipairs({ username, fullname, email }) do
+                    local pattern = '^\\w+\\.author\\s*=\\s*.*' .. identifier .. '.*'
+                    if #check_pattern(pattern) > 0 then
+                        return true
+                    end
+                end
+
+                local exclude_pattern = 'spoonPath = ".*' .. username .. '.*"'
+                if #check_pattern(exclude_pattern) > 0 then
+                    return false
+                end
+                return false
+            end
+
+            local function filter_spoon_diagnostics(err, result, ctx, cfg)
+                local spoon_path_pattern = '^file.*%.spoon.*$'
+                if result.uri:match(spoon_path_pattern) then
+                    if not result.uri:match('^.*init%.lua$') then
+                        return
+                    end
+                    local file_path = vim.uri_to_fname(result.uri)
+                    if is_my_spoon(file_path) then
+                        return vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, cfg)
+                    end
+                    return
+                end
+                return vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx, cfg)
+            end
+
+            local function get_lua_version()
+                local buffer_path = tostring(vim.fn.expand('%:p:h'))
+                local nvim_path = tostring(vim.fn.stdpath('config'))
+                local is_neovim = string.find(buffer_path, nvim_path) ~= nil
+                local is_hammerspoon = string.find(buffer_path, 'hammerspoon') ~= nil
+
+                if is_neovim then
+                    return 'LuaJIT'
+                elseif is_hammerspoon then
+                    local lua_version = vim.fn.system('hs -c _VERSION'):gsub('[\n\r]', '')
+                    if lua_version:match('^error') then
+                        vim.notify(lua_version, vim.log.levels.ERROR, { title = 'Neovim' })
+                    end
+                    return lua_version
+                end
+                return 'LuaJIT'
+            end
+
+            local function filter_trash_notes(err, result, ctx)
+                local pattern = '.*%.trash/.*'
+                if result.uri:match(pattern) then
+                    result.diagnostics = vim.tbl_filter(function(diagnostic)
+                        return not string.find(diagnostic.source or '', '%.trash/')
+                    end, result.diagnostics)
+                else
+                    vim.lsp.diagnostic.on_publish_diagnostics(err, result, ctx)
+                end
+            end
+
+            -- Configure LSP servers using new vim.lsp.config API
+
+            -- Bash
+            vim.lsp.config.bashls = {
+                cmd = { 'bash-language-server', 'start' },
+                cmd_env = { GLOB_PATTERN = '*@(.sh|.inc|.bash|.command)' },
+                filetypes = { 'sh', 'zsh', 'bash', 'shell' },
+                root_markers = { '.git' },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'sh', 'zsh', 'bash', 'shell' },
+                callback = function(args)
+                    vim.lsp.start({ name = 'bashls', bufnr = args.buf })
+                    -- Find the client and attach
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'bashls' then
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Lua with custom on_attach
+            vim.lsp.config.lua_ls = {
+                cmd = { 'lua-language-server' },
+                filetypes = { 'lua' },
+                root_markers = { '.luarc.json', '.luarc.jsonc', '.git' },
+                on_init = function(client)
+                    local root_dir = client.workspace_folders and client.workspace_folders[1].name
+                        or vim.fn.getcwd()
+
+                    local lua_version = get_lua_version()
+                    local homebrew_prefix = vim.fn.system('brew --prefix'):gsub('[\n\r]', '')
+
+                    local lua_path = {
+                        '?.lua',
+                        '?/init.lua',
+                        vim.fn.expand(homebrew_prefix .. '/lib/luarocks/rocks-5.4/luarocks/share/lua/5.4/?.lua'),
+                    }
+
+                    local runtime = vim.api.nvim_get_runtime_file('', true)
+                    local library = {}
+                    for _, path in ipairs(runtime) do
+                        table.insert(library, path .. '/lua')
+                    end
+
+                    local is_hammerspoon = root_dir:match('hammerspoon')
+                    if is_hammerspoon then
+                        table.insert(library, vim.fn.expand('~/.config/hammerspoon/Spoons/EmmyLua.spoon/annotations'))
+                    end
+
+                    local settings = {
+                        Lua = {
+                            runtime = {
+                                version = lua_version,
+                                path = lua_path,
+                            },
+                            completion = {
+                                displayContext = 1,
+                            },
+                            diagnostics = {
+                                enable = true,
+                                globals = { 'vim', 'use', 'hs', 'describe', 'it', 'before_each', 'after_each' },
+                                ['codestyle-check'] = 'Any',
+                                libraryFiles = 'Enable',
+                            },
+                            workspace = {
+                                checkThirdParty = true,
+                                library = library,
+                            },
+                            format = {
+                                enable = false,
+                                defaultConfig = {
+                                    indent_style = 'space',
+                                    indent_size = 2,
+                                },
+                            },
+                        },
+                    }
+
+                    client.config.settings = settings
+                    client.notify('workspace/didChangeConfiguration', { settings = settings })
+                end,
+                handlers = {
+                    ['textDocument/publishDiagnostics'] = filter_spoon_diagnostics,
+                },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = 'lua',
+                callback = function(args)
+                    vim.lsp.start({ name = 'lua_ls', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'lua_ls' then
+                                on_attach_lsp(client, args.buf)
+                                -- Lua-specific autocmd
+                                vim.api.nvim_create_augroup('LspLua', { clear = true })
+                                vim.api.nvim_create_autocmd('InsertLeave', {
+                                    buffer = args.buf,
+                                    callback = function()
+                                        local line = vim.api.nvim_win_get_cursor(0)[1]
+                                        if line ~= vim.b.last_line then
+                                            vim.cmd('norm! zz')
+                                            vim.b.last_line = line
+                                            if vim.fn.getline(line) == '' then
+                                                local column = vim.fn.getcurpos()[5]
+                                                vim.fn.cursor({ line, column })
+                                            end
+                                        end
+                                    end,
+                                    group = 'LspLua',
+                                })
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- TypeScript
+            vim.lsp.config.ts_ls = {
+                cmd = { 'typescript-language-server', '--stdio' },
+                filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+                root_markers = { 'package.json', 'tsconfig.json', '.git' },
+                on_init = function(client)
+                    local ts_config = {
+                        inlayHints = {
+                            includeInlayParameterNameHints = 'all',
+                            includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+                            includeInlayFunctionParameterTypeHints = true,
+                            includeInlayVariableTypeHints = true,
+                            includeInlayPropertyDeclarationTypeHints = true,
+                            includeInlayFunctionLikeReturnTypeHints = true,
+                            includeInlayEnumMemberValueHints = true,
+                        },
+                    }
+                    client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
+                        typescript = ts_config,
+                        javascript = ts_config,
+                    })
+                    client.notify('workspace/didChangeConfiguration', { settings = client.config.settings })
+                end,
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+                callback = function(args)
+                    vim.lsp.start({ name = 'ts_ls', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'ts_ls' then
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Svelte
+            vim.lsp.config.svelte = {
+                cmd = { 'svelteserver', '--stdio' },
+                filetypes = { 'svelte' },
+                root_markers = { 'package.json', '.git' },
+                on_init = function(client)
+                    client.server_capabilities.semanticTokensProvider = nil
+                    client.config.settings = vim.tbl_deep_extend('force', client.config.settings or {}, {
+                        svelte = {
+                            plugin = {
+                                html = {
+                                    completions = {
+                                        enable = true,
+                                        emmet = false,
+                                    },
+                                },
+                            },
+                        },
+                    })
+                    client.notify('workspace/didChangeConfiguration', { settings = client.config.settings })
+                end,
+                handlers = {
+                    ['workspace/semanticTokens/refresh'] = function() return { result = nil, error = nil } end,
+                },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = 'svelte',
+                callback = function(args)
+                    vim.lsp.start({ name = 'svelte', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'svelte' then
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Rust
+            vim.lsp.config.rust_analyzer = {
+                cmd = { 'rust-analyzer' },
+                filetypes = { 'rust' },
+                root_markers = { 'Cargo.toml', '.git' },
+                on_init = function(client)
+                    client.config.settings = vim.tbl_deep_extend('force', client.config.settings, {
+                        ['rust-analyzer'] = {
+                            assist = { importMergeBehaviour = 'full' },
+                            callInfo = { full = true },
+                            cargo = {
+                                buildScripts = { enable = true },
+                                loadOutDirsFromCheck = true,
+                            },
+                            checkOnSave = { allFeatures = true },
+                            procMacro = { enable = true },
+                            diagnostics = {
+                                enable = true,
+                                disabled = { 'macro-error', 'unresolved-proc-macro' },
+                                enableExperimental = true,
+                            },
+                        },
+                    })
+                    client.notify('workspace/didChangeConfiguration', { settings = client.config.settings })
+                end,
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = 'rust',
+                callback = function(args)
+                    vim.lsp.start({ name = 'rust_analyzer', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'rust_analyzer' then
+                                pcall(require, 'lsp-format')
+                                if package.loaded['lsp-format'] then
+                                    require('lsp-format').on_attach(client)
+                                end
+
+                                vim.api.nvim_create_augroup('DiagnosicFloat', { clear = true })
+                                vim.api.nvim_create_autocmd('CursorHold', {
+                                    callback = function()
+                                        vim.diagnostic.open_float(nil, {})
+                                    end,
+                                    group = 'DiagnosicFloat',
+                                })
+
+                                -- Rust-tools keymaps
+                                if package.loaded['rust-tools'] then
+                                    vim.keymap.set('n', '<C-space>', require('rust-tools').hover_actions.hover_actions,
+                                        { buffer = args.buf })
+                                    vim.keymap.set('n', '<Leader>ga', require('rust-tools').code_action_group.code_action_group,
+                                        { buffer = args.buf })
+                                end
+
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Python (Ruff)
+            vim.lsp.config.ruff = {
+                cmd = { 'ruff-lsp' },
+                filetypes = { 'python' },
+                root_markers = { 'pyproject.toml', 'setup.py', '.git' },
+                init_options = {
+                    settings = {
+                        args = {},
+                        fixAll = true,
+                        interpreter = {
+                            properties = {
+                                InterpreterPath = vim.fn.exepath('python3'),
+                            },
+                        },
+                    },
+                },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = 'python',
+                callback = function(args)
+                    vim.lsp.start({ name = 'ruff', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'ruff' then
+                                pcall(require, 'lsp-format')
+                                if package.loaded['lsp-format'] then
+                                    require('lsp-format').on_attach(client)
+                                end
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Marksman
+            vim.lsp.config.marksman = {
+                cmd = { 'marksman', 'server' },
+                filetypes = { 'markdown', 'markdown.mdx' },
+                root_markers = { '.git', '.marksman.toml' },
+                handlers = {
+                    ['textDocument/publishDiagnostics'] = filter_trash_notes,
+                },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'markdown', 'markdown.mdx' },
+                callback = function(args)
+                    vim.lsp.start({ name = 'marksman', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'marksman' then
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- Harper (grammar checker) - optional, only if installed
+            if vim.fn.executable('harper-ls') == 1 then
+                vim.lsp.config.harper_ls = {
+                    cmd = { 'harper-ls', '--stdio' },
+                    filetypes = { 'markdown' },
+                    root_markers = { '.git' },
+                    handlers = {
+                        ['textDocument/publishDiagnostics'] = filter_trash_notes,
+                    },
+                    settings = {
+                        ['harper-ls'] = {
+                            linters = {
+                                SpellCheck = true,
+                                SpelledNumbers = false,
+                                AnA = true,
+                                SentenceCapitalization = false,
+                                UnclosedQuotes = true,
+                                WrongQuotes = false,
+                                LongSentences = true,
+                                RepeatedWords = true,
+                                Spaces = true,
+                                Matcher = true,
+                                CorrectNumberSuffix = true,
+                            },
+                            diagnosticSeverity = 'hint',
+                            dialect = 'American',
+                            maxFileLength = 120000,
+                        },
+                    },
+                }
+
+                vim.api.nvim_create_autocmd('FileType', {
+                    pattern = 'markdown',
+                    callback = function(args)
+                        vim.lsp.start({ name = 'harper_ls', bufnr = args.buf })
+                        vim.defer_fn(function()
+                            for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                                if client.name == 'harper_ls' then
+                                    on_attach_lsp(client, args.buf)
+                                    break
+                                end
+                            end
+                        end, 100)
+                    end,
+                })
+            end
+
+            -- Clangd (C/C++)
+            vim.lsp.config.clangd = {
+                cmd = { 'clangd' },
+                filetypes = { 'c', 'cpp', 'objc', 'objcpp' },
+                root_markers = { 'compile_commands.json', '.git' },
+                handlers = {
+                    ['textDocument/publishDiagnostics'] = filter_trash_notes,
+                },
+            }
+
+            vim.api.nvim_create_autocmd('FileType', {
+                pattern = { 'c', 'cpp', 'objc', 'objcpp' },
+                callback = function(args)
+                    vim.lsp.start({ name = 'clangd', bufnr = args.buf })
+                    vim.defer_fn(function()
+                        for _, client in pairs(vim.lsp.get_clients({ bufnr = args.buf })) do
+                            if client.name == 'clangd' then
+                                on_attach_lsp(client, args.buf)
+                                break
+                            end
+                        end
+                    end, 100)
+                end,
+            })
+
+            -- UnoCSS
+            vim.lsp.config.unocss = {
+                cmd = { 'unocss-language-server', '--stdio' },
+                filetypes = { 'html', 'css', 'scss', 'sass', 'vue', 'svelte' },
+                root_markers = { 'uno.config.js', 'uno.config.ts', '.git' },
+                on_attach = function(client)
+                    client.server_capabilities.semanticTokensProvider = nil
+                end,
+            }
+
+            -- ESLint
+            vim.lsp.config.eslint = {
+                cmd = { 'vscode-eslint-language-server', '--stdio' },
+                filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+                root_markers = { '.eslintrc', '.eslintrc.js', '.eslintrc.json', 'package.json', '.git' },
+                on_attach = function(client, bufnr)
+                    client.server_capabilities.documentFormattingProvider = false
+                    client.server_capabilities.semanticTokensProvider = nil
+                end,
+            }
+
+            -- LSP Status
+            local lsp_status_ok, lsp_status = pcall(require, 'lsp-status')
+            if lsp_status_ok then
+                lsp_status.register_progress()
+                lsp_status.config = {
+                    select_symbol = function(cursor_pos, symbol)
+                        if symbol.valueRange then
+                            local value_range = {
+                                ['start'] = {
+                                    character = 0,
+                                    line = vim.fn.byte2line(symbol.valueRange[1]),
+                                },
+                                ['end'] = {
+                                    character = 0,
+                                    line = vim.fn.byte2line(symbol.valueRange[2]),
+                                },
+                            }
+                            return require('lsp-status.util').in_range(cursor_pos, value_range)
+                        end
+                    end,
+                }
+            end
+
+            -- Keep lsp-zero's on_attach for backwards compatibility
+            lsp_zero.on_attach(on_attach_lsp)
+        end,
+        branch = 'v3.x',
+    },
+}
+

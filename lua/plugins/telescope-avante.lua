@@ -1,6 +1,7 @@
 return {
     {
         'oleksiiluchnikov/telescope-avante.nvim',
+        dir = '~/projects/telescope-avante.nvim',
         dependencies = {
             'nvim-telescope/telescope.nvim',
             'yetone/avante.nvim',

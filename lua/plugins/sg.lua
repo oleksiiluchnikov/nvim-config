@@ -24,25 +24,25 @@ return {
             -- Then we need to create the autogroup
             require('sg').setup(opts)
 
-            -- Then we need to create the autocommand
-            vim.api.nvim_create_autocmd({ 'BufEnter' }, {
-                pattern = '*',
-                callback = function()
-                    -- First we need to get the width of the screen
-                    local screen_width = vim.api.nvim_list_uis()[1].width
-                    local width = math.floor(screen_width * 0.5)
-
-                    -- Then we need to calculate the width of the floating window
-                    local win = vim.api.nvim_get_current_win()
-                    local buf = vim.api.nvim_win_get_buf(win)
-                    -- if current buffer has "Cody History" in it's name
-                    local bufname = vim.api.nvim_buf_get_name(buf)
-                    if not string.find(bufname, 'Cody History') then
-                        return
-                    end
-                    vim.api.nvim_win_set_width(0, width)
-                end,
-            })
+            -- -- Then we need to create the autocommand
+            -- vim.api.nvim_create_autocmd({ 'BufEnter' }, {
+            --     pattern = '*',
+            --     callback = function()
+            --         -- First we need to get the width of the screen
+            --         local screen_width = vim.api.nvim_list_uis()[1].width
+            --         local width = math.floor(screen_width * 0.5)
+            --
+            --         -- Then we need to calculate the width of the floating window
+            --         local win = vim.api.nvim_get_current_win()
+            --         local buf = vim.api.nvim_win_get_buf(win)
+            --         -- if current buffer has "Cody History" in it's name
+            --         local bufname = vim.api.nvim_buf_get_name(buf)
+            --         if not string.find(bufname, 'Cody History') then
+            --             return
+            --         end
+            --         vim.api.nvim_win_set_width(0, width)
+            --     end,
+            -- })
 
             -- If the current buffer is a floating window
             -- then place align in to the bootom of the screen
