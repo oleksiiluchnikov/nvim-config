@@ -37,48 +37,37 @@ end
 ---Entry point for converting a Lua function
 ---@return nil
 function M.toggle_function()
-	local buf = vim.api.nvim_get_current_buf() -- Get the current buffer
-	local lnum = vim.fn.line('.') -- Get the current line number
-	local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1] -- Get the current line
+    local buf = vim.api.nvim_get_current_buf() -- Get the current buffer
+    local lnum = vim.fn.line('.') -- Get the current line number
+    local line = vim.api.nvim_buf_get_lines(buf, lnum - 1, lnum, false)[1] -- Get the current line
 
-	-- Precompile patterns for better performance
-	local function_pattern = '^%s*function%s*([^%(]+)%('
-	local public_pattern = '^%s*(%w+)%.'
-	local local_pattern = '^%s*function%s*(%w+)%.'
+    -- Precompile patterns for better performance
+    local function_pattern = '^%s*function%s*([^%(]+)%('
+    local public_pattern = '^%s*(%w+)%.'
+    local local_pattern = '^%s*function%s*(%w+)%.'
 
-	-- Use string.find instead of string.match for better performance
-	local function_name = line:find(function_pattern)
-	if function_name then
-		local module_name
-		if line:find(public_pattern) then
-			-- Capture the module name using string.match
-			module_name = line:match(public_pattern)
-			M.function_from_public_to_local(
-				buf,
-				lnum - 1,
-				lnum,
-				module_name
-			)
-		elseif line:find(local_pattern) then
-			-- Capture the module name using string.match
-			module_name = line:match(local_pattern)
-			M.function_from_local_to_public(
-				buf,
-				lnum - 1,
-				lnum,
-				module_name
-			)
-		end
-	else
-		-- Use early return to avoid unnecessary computation
-		vim.notify(
-			'Cursor is not on a function definition',
-			vim.log.levels.WARN
-		)
-		return
-	end
+    -- Use string.find instead of string.match for better performance
+    local function_name = line:find(function_pattern)
+    if function_name then
+        local module_name
+        if line:find(public_pattern) then
+            -- Capture the module name using string.match
+            module_name = line:match(public_pattern)
+            M.function_from_public_to_local(buf, lnum - 1, lnum, module_name)
+        elseif line:find(local_pattern) then
+            -- Capture the module name using string.match
+            module_name = line:match(local_pattern)
+            M.function_from_local_to_public(buf, lnum - 1, lnum, module_name)
+        end
+    else
+        -- Use early return to avoid unnecessary computation
+        vim.notify(
+            'Cursor is not on a function definition',
+            vim.log.levels.WARN
+        )
+        return
+    end
 end
-
 
 --- Get the source of a function that is passed in.
 --- @param func function
@@ -132,47 +121,44 @@ end
 --- @param end_line integer End line
 --- @param module_name string Module name
 --- @return string[] Modified lines
-function M.function_from_local_to_public(
-	buf,
-	start_line,
-	end_line,
-	module_name
-)
---- @type string[]
-local lines = vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
+function M.function_from_local_to_public(buf, start_line, end_line, module_name)
+    --- @type string[]
+    local lines = vim.api.nvim_buf_get_lines(buf, start_line, end_line, false)
 
-local pattern = '^function ' .. module_name .. '%.([a-zA-Z0-9_]+)%((.*)%)$'
-local to_format = module_name .. '.%s = function(%s)'
+    local pattern = '^function ' .. module_name .. '%.([a-zA-Z0-9_]+)%((.*)%)$'
+    local to_format = module_name .. '.%s = function(%s)'
 
-	--- @type string[]
-	local new_lines = convert_lines(lines, pattern, to_format)
+    --- @type string[]
+    local new_lines = convert_lines(lines, pattern, to_format)
 
-	vim.api.nvim_buf_set_lines(buf, start_line, end_line, false, new_lines)
+    vim.api.nvim_buf_set_lines(buf, start_line, end_line, false, new_lines)
 
-	--- @type string[]
-	return new_lines
+    --- @type string[]
+    return new_lines
 end
 
-function M.function_from_public_to_local(
-	buf,
-	start_line,
-	end_line,
-	module_name
-)
-lnum,
-module_name
-	    )
-    end
+function M.function_from_public_to_local(buf, start_line, end_line, module_name)
+    local lnum = vim.api.nvim_win_get_cursor(0)[1]
+    local line = vim.api.nvim_get_current_line()
+
+    if is_function_definition(line) then
+        local new_lines = convert_function(buf, lnum, line, module_name)
+        vim.api.nvim_buf_set_lines(
+            buf,
+            start_line - 1,
+            end_line,
+            false,
+            new_lines
+        )
     else
-	    vim.notify(
-		    'Cursor is not on a function definition',
-		    vim.log.levels.WARN
-	    )
+        vim.notify(
+            'Cursor is not on a function definition',
+            vim.log.levels.WARN
+        )
 
-	    convert_function(buf, lnum, line)
+        convert_function(buf, lnum, line)
     end
 end
-
 
 --- @alias LuaVersion string
 --- |> 'LuaJIT'
@@ -188,34 +174,34 @@ end
 --- local lua_version = require('config.utils').get_lua_version()
 --- assert(lua_version == 'LuaJIT' or lua_version == 'Lua 5.1')
 --- ```
-    function M.get_version()
-	    local buffer_path = tostring(vim.fn.expand('%:p:h'))
-	    local nvim_path = tostring(vim.fn.stdpath('config'))
-	    local is_neovim = string.find(buffer_path, nvim_path) and true or false
-	    local is_hammerspoon = string.find(buffer_path, 'hammerspoon') and true
-	    or false
+function M.get_version()
+    local buffer_path = tostring(vim.fn.expand('%:p:h'))
+    local nvim_path = tostring(vim.fn.stdpath('config'))
+    local is_neovim = string.find(buffer_path, nvim_path) and true or false
+    local is_hammerspoon = string.find(buffer_path, 'hammerspoon') and true
+        or false
 
-	    ---@type LuaVersion
-	    local lua_version
+    ---@type LuaVersion
+    local lua_version
 
-	    if is_neovim then
-		    lua_version = 'LuaJIT'
-	    elseif is_hammerspoon then
-		    local lua_version_str =
-		    vim.fn.system('hs -c _VERSION'):gsub('[\n\r]', '')
-		    if lua_version_str:match('^error') then
-			    vim.notify(lua_version_str, vim.log.levels.ERROR, {
-				    title = 'Neovim',
-			    })
-		    end
-		    ---@diagnostic disable-next-line: cast-local-type
-		    lua_version = lua_version_str
-	    else
-		    lua_version = 'LuaJIT'
-	    end
-
-	    return lua_version
+    if is_neovim then
+        lua_version = 'LuaJIT'
+    elseif is_hammerspoon then
+        local lua_version_str =
+            vim.fn.system('hs -c _VERSION'):gsub('[\n\r]', '')
+        if lua_version_str:match('^error') then
+            vim.notify(lua_version_str, vim.log.levels.ERROR, {
+                title = 'Neovim',
+            })
+        end
+        ---@diagnostic disable-next-line: cast-local-type
+        lua_version = lua_version_str
+    else
+        lua_version = 'LuaJIT'
     end
+
+    return lua_version
+end
 function M.write_then_source()
     vim.cmd('write')
     local filetype = vim.bo.filetype
@@ -232,4 +218,4 @@ function M.write_then_source()
         vim.cmd('source %')
     end
 end
-    return M
+return M

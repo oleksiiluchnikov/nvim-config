@@ -139,7 +139,6 @@ return {
             return adapter
         end,
 
-
         opencode_claude = function()
             return require('codecompanion.adapters').extend('anthropic', {
                 name = 'opencode_claude',

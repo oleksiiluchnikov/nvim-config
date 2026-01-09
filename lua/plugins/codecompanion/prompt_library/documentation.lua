@@ -24,10 +24,11 @@ return {
             {
                 role = 'user',
                 content = function(context)
-                    local text = require('codecompanion.helpers.actions').get_code(
-                        context.start_line,
-                        context.end_line
-                    )
+                    local text =
+                        require('codecompanion.helpers.actions').get_code(
+                            context.start_line,
+                            context.end_line
+                        )
                     return string.format(
                         'Document this code:\n\n```%s\n%s\n```',
                         context.filetype,
@@ -68,4 +69,3 @@ return {
         },
     },
 }
-

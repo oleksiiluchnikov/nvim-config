@@ -232,11 +232,14 @@ function M.toggle_focus_mode(state)
 
     vim.opt.laststatus = state and 0 or 3
 
-    if require("lazy.core.config").plugins['copilot.vim'] or require("lazy.core.config").plugins['copilot.lua'] then
+    if
+        require('lazy.core.config').plugins['copilot.vim']
+        or require('lazy.core.config').plugins['copilot.lua']
+    then
         if not vim.g.focus_mode_no_copilot then
             vim.cmd('Copilot ' .. (state and 'disable' or 'enable'))
 
-            if require("lazy.core.config").plugins['copilot.lua'] then
+            if require('lazy.core.config').plugins['copilot.lua'] then
                 vim.defer_fn(function()
                     require('utils.ui').refresh_ui()
                 end, 100)
@@ -333,7 +336,10 @@ function M.autostart_focus_mode()
                 vim.lsp.inline_completion.enable(true)
             end
 
-            if require("lazy.core.config").plugins['copilot.vim'] or require("lazy.core.config").plugins['copilot.lua'] then
+            if
+                require('lazy.core.config').plugins['copilot.vim']
+                or require('lazy.core.config').plugins['copilot.lua']
+            then
                 vim.cmd('Copilot enable')
             end
         else
@@ -341,14 +347,17 @@ function M.autostart_focus_mode()
                 vim.lsp.inline_completion.enable(vim.g.focus_mode)
             end
 
-            if require("lazy.core.config").plugins['copilot.vim'] or require("lazy.core.config").plugins['copilot.lua'] then
+            if
+                require('lazy.core.config').plugins['copilot.vim']
+                or require('lazy.core.config').plugins['copilot.lua']
+            then
                 vim.cmd(
                     'Copilot ' .. (vim.g.focus_mode and 'disable' or 'enable')
                 )
             end
         end
 
-        if require("lazy.core.config").plugins['copilot.lua'] then
+        if require('lazy.core.config').plugins['copilot.lua'] then
             vim.defer_fn(function()
                 require('utils.ui').refresh_ui()
             end, 100)

@@ -112,7 +112,10 @@ return {
 
                             local ok, grug_far = pcall(require, 'grug-far')
                             if not ok then
-                                vim.notify('grug-far not found', vim.log.levels.ERROR)
+                                vim.notify(
+                                    'grug-far not found',
+                                    vim.log.levels.ERROR
+                                )
                                 return
                             end
 
@@ -124,11 +127,15 @@ return {
                                     staticTitle = 'Find and Replace from Explorer',
                                 })
                             else
-                                local instance = grug_far.get_instance('explorer')
+                                local instance =
+                                    grug_far.get_instance('explorer')
                                 if instance then
                                     instance:open()
                                     -- updating the prefills without clearing the search and other fields
-                                    instance:update_input_values(prefills, false)
+                                    instance:update_input_values(
+                                        prefills,
+                                        false
+                                    )
                                 end
                             end
                         end,
