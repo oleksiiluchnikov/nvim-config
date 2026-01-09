@@ -3,7 +3,6 @@
     Handles Ghostty window management in remote server mode
 --]]
 
-local M = {}
 
 -- Detect server mode
 local function is_remote_ui()
@@ -26,60 +25,55 @@ local function close_ghostty_window()
         )
     end
 end
+if not is_remote_ui() then
+    return
+end
 
-function M.setup()
-    if not is_remote_ui() then
-        return
-    end
+-- Override :q to close window (with proper error handling)
+vim.api.nvim_create_user_command('Q', function()
+    -- Try to close window first
+    local ok, _ = pcall(function()
+        vim.cmd('close')
+    end)
 
-    -- Override :q to close window (with proper error handling)
-    vim.api.nvim_create_user_command('Q', function()
-        -- Try to close window first
-        local ok, _ = pcall(function()
-            vim.cmd('close')
-        end)
+    if not ok then
+        -- Can't close window (probably last one), try buffer delete
+        local buf_count = #vim.fn.getbufinfo({ buflisted = 1 })
 
-        if not ok then
-            -- Can't close window (probably last one), try buffer delete
-            local buf_count = #vim.fn.getbufinfo({ buflisted = 1 })
-
-            if buf_count > 1 then
-                vim.cmd('bdelete')
-            else
-                -- Last buffer - close the Ghostty window
-                vim.notify('Closing window...', vim.log.levels.INFO)
-                vim.defer_fn(close_ghostty_window, 50)
-            end
+        if buf_count > 1 then
+            vim.cmd('bdelete')
+        else
+            -- Last buffer - close the Ghostty window
+            vim.notify('Closing window...', vim.log.levels.INFO)
+            vim.defer_fn(close_ghostty_window, 50)
         end
-    end, { desc = 'Remote: Safe quit (close window or buffer)' })
+    end
+end, { desc = 'Remote: Safe quit (close window or buffer)' })
 
-    -- Commands
-    vim.api.nvim_create_user_command(
-        'QuitUI',
-        close_ghostty_window,
-        { desc = 'Remote: Close Ghostty window' }
-    )
-    vim.api.nvim_create_user_command(
-        'QuitServer',
-        'confirm qall',
-        { desc = 'Remote: Stop Neovim server' }
-    )
+-- Commands
+vim.api.nvim_create_user_command(
+    'QuitUI',
+    close_ghostty_window,
+    { desc = 'Remote: Close Ghostty window' }
+)
+vim.api.nvim_create_user_command(
+    'QuitServer',
+    'confirm qall',
+    { desc = 'Remote: Stop Neovim server' }
+)
 
-    -- Remaps
-    vim.cmd([[
+-- Remaps
+vim.cmd([[
         cnoreabbrev <expr> q (getcmdtype() == ':' && getcmdline() == 'q') ? 'Q' : 'q'
         cnoreabbrev <expr> quit (getcmdtype() == ':' && getcmdline() == 'quit') ? 'Q' : 'quit'
         cnoreabbrev <expr> wq (getcmdtype() == ':' && getcmdline() == 'wq') ? 'w<bar>Q' : 'wq'
         cnoreabbrev <expr> qa (getcmdtype() == ':' && getcmdline() == 'qa') ? 'Q' : 'qa'
-    ]])
+        ]])
 
-    -- ZZ/ZQ
-    vim.keymap.set('n', 'ZZ', function()
-        vim.cmd('write')
-        close_ghostty_window()
-    end, { desc = 'Remote: Save and close window' })
+-- ZZ/ZQ
+vim.keymap.set('n', 'ZZ', function()
+    vim.cmd('write')
+    close_ghostty_window()
+end, { desc = 'Remote: Save and close window' })
 
-    vim.keymap.set('n', 'ZQ', close_ghostty_window, { desc = 'Remote: Close window' })
-end
-
-return M
+vim.keymap.set('n', 'ZQ', close_ghostty_window, { desc = 'Remote: Close window' })

@@ -19,7 +19,11 @@ local function safe_load(module_name)
     if not status then
         vim.schedule(function()
             vim.notify(
-                string.format('❌ Failed to load \'%s\':\n%s', module_name, err),
+                string.format(
+                    '❌ Failed to load \'%s\':\n%s',
+                    module_name,
+                    err
+                ),
                 vim.log.levels.ERROR,
                 { title = 'Config Loader' }
             )
