@@ -34,10 +34,13 @@ require('lazy').setup(
     {
         -- Configure any other settings here. See the documentation for more details.
         -- colorscheme that will be used when installing plugins.
-        install = { colorscheme = { 'habamax' } },
+        install = { colorscheme = { 'danger' } },
         -- automatically check for plugin updates
-        checker = { enabled = true },
+        checker = { enabled = false },
+        diff = { cmd = 'diffview.nvim' },
         ui = {
+            wrap = false,
+            border = 'none',
             icons = vim.g.have_nerd_font and {} or {
                 cmd = '⌘',
                 config = '🛠',
@@ -52,6 +55,20 @@ require('lazy').setup(
                 start = '🚀',
                 task = '📌',
                 lazy = '💤 ',
+            },
+        },
+        performance = {
+            rtp = {
+                disabled_plugins = {
+                    'gzip',
+                    'matchit',
+                    'matchparen',
+                    'netrwPlugin',
+                    'tarPlugin',
+                    'tohtml',
+                    'tutor',
+                    'zipPlugin',
+                },
             },
         },
     }

@@ -50,57 +50,8 @@ return {
             },
         })
 
-        -- Declarations
-        ------------------------------------------------------------------------------
-        local snippet = ls.s
-        local snippet_from_nodes = ls.sn
-        local t = ls.t
-        local i = ls.i
-        local f = ls.f
-        local c = ls.c
-        local cond = ls.cond
-        local dyn = ls.dyn
-        local l = require('luasnip.extras').lambda
-        local events = require('luasnip.util.events')
-
-        local same = function(index)
-            return f(function(args)
-                return args[1]
-            end, { index })
-        end
-
-        local toexpand_count = 0 -- Count of the number of times the snippet has been expanded
-
-        -- Snippets
-        ------------------------------------------------------------------------------
-        ls.add_snippets('lua', {
-            snippet('date', {
-                t(os.date('%d/%m/%Y')),
-            }),
-            -- try if else snippet
-            ls.parser.parse_snippet(
-                'try',
-                [[
-    try {
-        $1
-    } catch (error) {
-        $2
-    }
-    ]]
-            ),
-            ls.parser.parse_snippet(
-                'if',
-                [[
-    if ($1) {
-        $2
-    } else {
-        $3
-    }
-    ]]
-            ),
-            -- if else snippet
-            -- to use the snippet, type 'try' and press <c-k> then press <tab> to jump to the next item
-        })
+        --- Load snippets
+        require('snippets').init()
 
         -- Mappings
         ------------------------------------------------------------------------------
@@ -132,8 +83,12 @@ return {
         -- <leader><leader> > s
         -- will source my luasnip file again, which will reload all my snippets
         vim.keymap.set({ 'n', 's' }, '<leader><leader> > s', function()
-            vim.cmd('luafile ~/.config/nvim/lua/user/configs/luasnip/init.lua')
-            vim.notify('Snippets reloaded!', vim.log.levels.INFO, { title = 'LuaSnip' })
+            vim.cmd('luafile ~/.config/nvim/lua/plugins/luasnip/init.lua')
+            vim.notify(
+                'Snippets reloaded!',
+                vim.log.levels.INFO,
+                { title = 'LuaSnip' }
+            )
         end, { silent = true })
     end,
 }

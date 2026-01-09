@@ -5,11 +5,15 @@ return {
         -- TODO:Review configurtation
         -----------------------------------------------------------------------
         'nvim-telescope/telescope.nvim',
-        dependencies = { 'nvim-lua/plenary.nvim' },
+        dependencies = {
+            'nvim-lua/plenary.nvim',
+            'benfowler/telescope-luasnip.nvim',
+        },
         -- config = function()
         --     require('plugins.telescope')
         -- end,
-        config = function()
+        lazy = false,
+        opts = function(opts)
             local telescope = require('telescope')
             local actions = require('telescope.actions')
             local custom_actions = require('plugins.telescope.actions')
@@ -37,7 +41,7 @@ return {
                 dynamic_title_preview = true,
                 results_title = 'Results',
                 prompt_title = function()
-                    return vim.fn.getcwd()
+                    return require('config.utils.directory').get_root_dir()
                 end,
                 mappings = {
                     i = {
@@ -153,6 +157,10 @@ return {
                 'nerdy',
                 'configs',
                 'avante',
+                'vault',
+                'prompts',
+                'llm_models',
+                'luasnip',
             }
 
             for _, ext in ipairs(extensions) do
@@ -162,12 +170,13 @@ return {
                 end
             end
 
-            telescope.setup({
+            opts = telescope.setup({
                 defaults = defaults,
                 extensions = extensions_opts,
             })
 
             require('plugins.telescope.pickers')
+            return opts
         end,
     },
 }

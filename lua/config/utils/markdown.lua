@@ -47,7 +47,9 @@ function M.checkbox.add_inline_field(line, field, value)
     if M.checkbox.has_inline_field(line, field) then
         return
     end
-    local new_line = line .. ' ' .. M.checkbox.construct_inline_field(field, value)
+    local new_line = line
+        .. ' '
+        .. M.checkbox.construct_inline_field(field, value)
     return new_line
 end
 
@@ -65,8 +67,11 @@ function M.checkbox.replace_inline_field_value(line, field, value)
     if M.checkbox.has_inline_field(line, field) == false then
         return line
     end
-    local new_line =
-        string.gsub(line, regex.inline, M.checkbox.construct_inline_field(field, value))
+    local new_line = string.gsub(
+        line,
+        regex.inline,
+        M.checkbox.construct_inline_field(field, value)
+    )
     return new_line
 end
 
@@ -102,8 +107,10 @@ function M.checkbox.toggle_checkbox()
     local current_checkbox_state = M.checkbox.get_checkbox_state(current_line)
 
     -- find current checkbox state in checkbox_states
-    local current_checkbox_state_index =
-        M.checkbox.find_index(M.checkbox.checkbox_states, current_checkbox_state)
+    local current_checkbox_state_index = M.checkbox.find_index(
+        M.checkbox.checkbox_states,
+        current_checkbox_state
+    )
 
     -- get the next checkbox state
     local next_checkbox_state_index = current_checkbox_state_index + 1
@@ -114,13 +121,17 @@ function M.checkbox.toggle_checkbox()
     end
 
     -- get the next checkbox state
-    local next_checkbox_state = M.checkbox.checkbox_states[next_checkbox_state_index]
+    local next_checkbox_state =
+        M.checkbox.checkbox_states[next_checkbox_state_index]
 
     -- if the any next checkbox state
     -- add date_updated field
     if not M.checkbox.has_inline_field(new_line, 'date_updated') then
-        new_line =
-            M.checkbox.add_inline_field(new_line, 'date_updated', os.date(date_format))
+        new_line = M.checkbox.add_inline_field(
+            new_line,
+            'date_updated',
+            os.date(date_format)
+        )
     else
         new_line = M.checkbox.replace_inline_field_value(
             new_line,

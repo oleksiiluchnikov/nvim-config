@@ -324,8 +324,8 @@ M.flexible = function(picker)
         local width = math.min(math.floor(vim.o.columns / 6) * 5, 120)
         local height = math.floor((vim.o.lines / 3) + 0.5) * 2
 
-        local preview_ratio = map_range(width, 100, 150, 3, 2.2)
-        -- willothy.fn.map_range(100, 150, 3, 2.2, vim.o.columns)
+        local preview_ratio = map_range(100, 150, 3, 2.2, vim.o.columns)
+        -- map preview ratio from columns: map_range(input_start, input_end, output_start, output_end, input)
 
         if vim.o.columns > 120 then
             local row = math.floor((vim.o.lines / 2) - (height / 2))
@@ -453,7 +453,7 @@ M.flexible = function(picker)
             c.prompt.height,
             c.prompt.row,
             c.prompt.col,
-            picker.propmt_title,
+            picker.prompt_title,
             c.prompt.border
         )
     end
@@ -611,141 +611,324 @@ M.compact = function(picker)
 end
 
 M.live_grep = function(picker)
-    local function get_configs(enter, width, height, row, col, title)
-        local win_config = {
+    local border_round =
+        { '╭', '─', '╮', '│', '╯', '─', '╰', '│' }
+
+    local function get_configs(
+        enter,
+        width,
+        height,
+        row,
+        col,
+        title,
+        has_border
+    )
+        return {
             relative = 'editor',
             width = width,
             height = height,
             row = row,
             col = col,
-            border = 'none',
+            anchor = 'NW',
+            border = has_border and border_round or 'none',
+            style = 'minimal',
+            noautocmd = false,
+            title = title and tostring(title) or nil,
+            title_pos = 'center',
         }
-        if title ~= 'Preview' then
-            win_config.style = 'minimal'
-        end
-        if title == 'Separator' then
-            win_config.title = '---'
-        end
-        if title == 'Prompt' then
-            win_config.border = {
-                '─',
-                '─',
-                '─',
-                '',
-                '',
-                '',
-                '',
-                '',
-            }
-        end
-        return win_config
     end
 
-    local function open_win(enter, width, height, row, col, title)
+    local function make_buf(name)
         local bufnr = vim.api.nvim_create_buf(false, true)
-        local win_config = get_configs(enter, width, height, row, col, title)
+        vim.bo[bufnr].bufhidden = 'wipe'
+        vim.bo[bufnr].buftype = 'nofile'
+        vim.bo[bufnr].swapfile = false
+        vim.bo[bufnr].modifiable = true
+        if name and name ~= 'preview' then
+            vim.bo[bufnr].filetype = name
+        end
+        return bufnr
+    end
+
+    local function open_window(
+        enter,
+        width,
+        height,
+        row,
+        col,
+        title,
+        has_border
+    )
+        local name = title and title:lower():match('%w+') or nil
+        local bufnr = make_buf(name)
+        local win_config =
+            get_configs(enter, width, height, row, col, title, has_border)
         local winid = vim.api.nvim_open_win(bufnr, enter, win_config)
 
-        vim.wo[winid].winhighlight = 'NormalFloat:TelescopeNormal'
+        vim.wo[winid].winblend = 10
+        vim.wo[winid].wrap = false
+        vim.wo[winid].number = false
+        vim.wo[winid].relativenumber = false
 
-        if title == 'Separator' then
-            -- Set content of separator
+        if name == 'preview' then
+            vim.wo[winid].cursorline = false
+            vim.wo[winid].signcolumn = 'yes:2'
+            vim.wo[winid].scrolloff = 8
+            vim.wo[winid].winhighlight =
+                'Normal:TelescopeNormal,NormalNC:TelescopeNormal'
+        elseif name == 'results' then
+            vim.wo[winid].cursorline = true
+            vim.wo[winid].scrolloff = 999 -- Keep cursor centered
+            vim.wo[winid].winhighlight =
+                'Normal:TelescopeNormal,CursorLine:TelescopeSelection'
+            vim.bo[bufnr].modifiable = false
+        elseif name == 'prompt' then
+            vim.wo[winid].cursorline = false
+            vim.wo[winid].scrolloff = 0
+            vim.wo[winid].winhighlight = 'Normal:TelescopePromptNormal'
+        elseif title == 'Separator' then
+            vim.wo[winid].cursorline = false
+            vim.wo[winid].scrolloff = 0
+            vim.wo[winid].winhighlight = 'Normal:TelescopeBorder'
             vim.api.nvim_buf_set_lines(
                 bufnr,
                 0,
                 -1,
                 false,
-                { string.rep('─', width) }
+                { string.rep('─', math.max(1, width - 2)) }
             )
+            vim.bo[bufnr].modifiable = false
         end
 
-        return Layout.Window({
-            bufnr = bufnr,
-            winid = winid,
-        })
+        return Layout.Window({ bufnr = bufnr, winid = winid })
     end
 
-    local function destroy_window(window)
-        if window then
-            if vim.api.nvim_win_is_valid(window.winid) then
-                vim.api.nvim_win_close(window.winid, true)
-            end
-            if vim.api.nvim_buf_is_valid(window.bufnr) then
-                vim.api.nvim_buf_delete(window.bufnr, { force = true })
-            end
+    local function close_window(window)
+        if not window then
+            return
         end
-    end
-
-    local update_window = function(window, opts)
-        if window then
-            if vim.api.nvim_win_is_valid(window.winid) then
-                vim.api.nvim_win_set_config(
-                    window.winid,
-                    vim.tbl_deep_extend(
-                        'force',
-                        vim.api.nvim_win_get_config(window.winid),
-                        opts
-                    )
-                )
-            end
+        if window.winid and vim.api.nvim_win_is_valid(window.winid) then
+            pcall(vim.api.nvim_win_close, window.winid, true)
+        end
+        if window.bufnr and vim.api.nvim_buf_is_valid(window.bufnr) then
+            pcall(vim.api.nvim_buf_delete, window.bufnr, { force = true })
         end
     end
 
-    -- local bufwidth = vim.api.nvim_get_option('columns')
-    -- local bufheight = vim.api.nvim_get_option('lines')
-    local bufwidth = vim.o.columns - 2
-    local bufheight = vim.o.lines - 2
+    local function update_window(window, opts)
+        if
+            not window
+            or not window.winid
+            or not vim.api.nvim_win_is_valid(window.winid)
+        then
+            return
+        end
+        local ok, cur = pcall(vim.api.nvim_win_get_config, window.winid)
+        if not ok then
+            return
+        end
+        local merged = vim.tbl_deep_extend('force', cur, opts)
+        pcall(vim.api.nvim_win_set_config, window.winid, merged)
+    end
 
-    local preview_height = 20
-    local preview_width = bufwidth - 2
+    local function compute_layout()
+        local margin_x, margin_y = 0, 0 -- 0 for max width
+        local total_w = math.max(20, vim.o.columns - margin_x * 2)
+        local total_h = math.max(6, vim.o.lines - margin_y * 2)
 
-    local prompt_height = 1
-    local prompt_row = preview_height + 1
-    local prompt_width = bufwidth
+        local results_w = math.floor(total_w * 0.45)
+        local preview_w = total_w - results_w - 1
+        local prompt_h = 1
+        local prompt_w = math.max(30, math.floor(total_w * 0.6))
 
-    local results_height = bufheight - preview_height - 4
-    local results_row = prompt_row + prompt_height
-    local results_width = bufwidth - 2
+        local results = {
+            width = results_w,
+            height = total_h - prompt_h - 2,
+            row = margin_y,
+            col = margin_x,
+        }
+        local preview = {
+            width = preview_w,
+            height = results.height + 1,
+            row = margin_y,
+            col = margin_x + results_w + 1,
+        }
+        local separator = {
+            width = total_w,
+            height = 1,
+            row = margin_y + results.height,
+            col = margin_x,
+        }
+        local prompt = {
+            width = prompt_w,
+            height = prompt_h,
+            row = margin_y + results.height + 1,
+            col = margin_x + math.floor((total_w - prompt_w) / 2),
+        }
 
-    local separator
+        return results, preview, separator, prompt
+    end
+
+    local resize_au_id
 
     return Layout({
         picker = picker,
         mount = function(self)
-            self.preview = open_win(
+            local results_cfg, preview_cfg, sep_cfg, prompt_cfg =
+                compute_layout()
+
+            self.results = open_window(
                 false,
-                preview_width,
-                preview_height,
-                0,
-                0,
-                picker.preview_title
+                results_cfg.width,
+                results_cfg.height,
+                results_cfg.row,
+                results_cfg.col,
+                picker.results_title or 'Results',
+                true
             )
-            self.results = open_win(
+            self.preview = open_window(
                 false,
-                results_width,
-                results_height,
-                results_row,
-                0,
-                picker.results_title
+                preview_cfg.width,
+                preview_cfg.height,
+                preview_cfg.row,
+                preview_cfg.col,
+                picker.preview_title or 'Preview',
+                true
             )
-            self.separator =
-                open_win(false, prompt_width, 1, preview_height, 0, 'Separator')
-            self.prompt = open_win(
+            self.separator = open_window(
+                false,
+                sep_cfg.width,
+                sep_cfg.height,
+                sep_cfg.row,
+                sep_cfg.col,
+                'Separator',
+                false
+            )
+            self.prompt = open_window(
                 true,
-                prompt_width,
-                prompt_height,
-                prompt_row,
-                0,
-                picker.prompt_title
+                prompt_cfg.width,
+                prompt_cfg.height,
+                prompt_cfg.row,
+                prompt_cfg.col,
+                picker.prompt_title or 'Prompt',
+                true
             )
+
+            -- Maintain scrolloff even if Telescope tries to override
+            if self.results and self.results.winid then
+                vim.api.nvim_create_autocmd('CursorMoved', {
+                    buffer = self.results.bufnr,
+                    callback = function()
+                        if vim.api.nvim_win_is_valid(self.results.winid) then
+                            pcall(function()
+                                vim.wo[self.results.winid].scrolloff = 999
+                            end)
+                        end
+                    end,
+                })
+            end
+
+            resize_au_id = vim.api.nvim_create_autocmd('VimResized', {
+                callback = function()
+                    pcall(function()
+                        if self and self.update then
+                            self:update()
+                        end
+                    end)
+                end,
+            })
         end,
         unmount = function(self)
-            destroy_window(self.results)
-            destroy_window(self.preview)
-            destroy_window(self.separator)
-            destroy_window(self.prompt)
+            if resize_au_id then
+                pcall(vim.api.nvim_del_autocmd, resize_au_id)
+                resize_au_id = nil
+            end
+            close_window(self.results)
+            close_window(self.preview)
+            close_window(self.separator)
+            close_window(self.prompt)
         end,
-        update = function(self) end,
+        update = function(self)
+            local results_cfg, preview_cfg, sep_cfg, prompt_cfg =
+                compute_layout()
+
+            if self.results then
+                update_window(
+                    self.results,
+                    get_configs(
+                        false,
+                        results_cfg.width,
+                        results_cfg.height,
+                        results_cfg.row,
+                        results_cfg.col,
+                        picker.results_title or 'Results',
+                        true
+                    )
+                )
+                -- Re-enforce scrolloff after resize
+                if vim.api.nvim_win_is_valid(self.results.winid) then
+                    pcall(function()
+                        vim.wo[self.results.winid].scrolloff = 999
+                    end)
+                end
+            end
+            if self.preview then
+                update_window(
+                    self.preview,
+                    get_configs(
+                        false,
+                        preview_cfg.width,
+                        preview_cfg.height,
+                        preview_cfg.row,
+                        preview_cfg.col,
+                        picker.preview_title or 'Preview',
+                        true
+                    )
+                )
+            end
+            if self.separator then
+                update_window(
+                    self.separator,
+                    get_configs(
+                        false,
+                        sep_cfg.width,
+                        sep_cfg.height,
+                        sep_cfg.row,
+                        sep_cfg.col,
+                        'Separator',
+                        false
+                    )
+                )
+                if
+                    self.separator.bufnr
+                    and vim.api.nvim_buf_is_valid(self.separator.bufnr)
+                then
+                    vim.bo[self.separator.bufnr].modifiable = true
+                    vim.api.nvim_buf_set_lines(
+                        self.separator.bufnr,
+                        0,
+                        -1,
+                        false,
+                        { string.rep('─', math.max(1, sep_cfg.width - 2)) }
+                    )
+                    vim.bo[self.separator.bufnr].modifiable = false
+                end
+            end
+            if self.prompt then
+                update_window(
+                    self.prompt,
+                    get_configs(
+                        true,
+                        prompt_cfg.width,
+                        prompt_cfg.height,
+                        prompt_cfg.row,
+                        prompt_cfg.col,
+                        picker.prompt_title or 'Prompt',
+                        true
+                    )
+                )
+            end
+        end,
     })
 end
 

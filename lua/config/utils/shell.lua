@@ -63,8 +63,6 @@ function M.open()
     -- Open VimShell in floating window
     -- Parameters:
     -- * None
-    -- Usage:
-    -- * <leader>to
 
     local win = vim.fn.win_getid()
     local term = vim.fn.win_gettype(win)

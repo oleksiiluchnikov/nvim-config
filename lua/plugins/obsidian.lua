@@ -8,7 +8,7 @@ return {
         --         dir = "~/Knowledge",
         --         log_level = vim.log.levels.DEBUG,
         --         daily_notes = {
-        --                 folder = "Journal/Daily",
+        --                 folder = "journal",
         --                 date_format = "%Y-%m-%d %A",
         --                 alias_format = "%Y-%m-%d",
         --         },

@@ -1,25 +1,25 @@
 --- @type table
-require('config.utils').git = {}
+M = {}
 
 --- Sets up global git base variable to HEAD ref
 ---
 --- @return nil
-require('config.utils').git.setup = function()
+M.setup = function()
     vim.g.git_base = 'HEAD'
 end
 
 --- Checks if the current directory is a git repository
 ---
 --- @return boolean
-require('config.utils').git.is_repo = function()
+M.is_repo = function()
     vim.fn.system('git -C . rev-parse')
     return vim.v.shell_error == 0
 end
 
 --- Get the root directory of the current git repo
 --- @return string? root_dir
-function require('config.utils').git.get_root_dir()
-    if not require('config.utils').git.is_repo() then
+function M.get_root_dir()
+    if not M.is_repo() then
         return nil
     end
 
@@ -34,7 +34,7 @@ end
 --- Sets the git base ref for diffing
 ---
 --- @param base string? The git ref to diff against, defaults to HEAD
-function require('config.utils').git.set_diff_base(base)
+function M.set_diff_base(base)
     if not base or base == '' then
         base = 'HEAD'
     end
@@ -49,3 +49,5 @@ function require('config.utils').git.set_diff_base(base)
 
     print(string.format('Now diffing against %s', vim.g.git_base))
 end
+
+return M
