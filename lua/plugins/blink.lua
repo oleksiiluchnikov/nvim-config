@@ -289,7 +289,6 @@ return {
                 default = {
                     'copilot',
                     'avante',
-                    'supermaven',
                     'lsp',
                     'path',
                     'snippets',
@@ -368,14 +367,7 @@ return {
                          module = 'blink-cmp-avante',
                          score_offset = 300,
                      },
-                     supermaven = {
-                         name = 'Supermaven',
-                         module = 'blink.compat.source',
-                         kind = 'Supermaven',
-                         enabled = true,
-                         async = true,
-                         score_offset = 350,
-                     },
+
                     cmdline = {
                         name = 'cmdline',
                         module = 'blink.cmp.sources.cmdline',
