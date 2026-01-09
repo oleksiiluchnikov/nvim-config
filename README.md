@@ -9,7 +9,7 @@ This is my personal Neovim configuration, tailored to my preferences and workflo
 2. Clone this repository to your desired location:
 
    ```bash
-   git clone https://github.com/oleksiiluchnikov/nvim.git ~/.config/nvim
+    git clone https://github.com/oleksiiluchnikov/nvim-config.git ~/.config/nvim
    ```
 
 ## Usage
