@@ -90,17 +90,18 @@ return {
                 -- ================================================================
                 -- ADAPTERS
                 -- ================================================================
-prompt_library = (function()
-    local custom_prompts = require('plugins.codecompanion.prompt_library')
-    --
-    -- -- Add config options to the prompts table
-    -- custom_prompts.show_preset_prompts = true
-    -- custom_prompts.markdown = {
-    --     dirs = { vim.fn.expand('~/prompts') },
-    -- }
-    --
-    return custom_prompts
-end)(),
+                prompt_library = (function()
+                    local custom_prompts =
+                        require('plugins.codecompanion.prompt_library')
+                    --
+                    -- -- Add config options to the prompts table
+                    -- custom_prompts.show_preset_prompts = true
+                    -- custom_prompts.markdown = {
+                    --     dirs = { vim.fn.expand('~/prompts') },
+                    -- }
+                    --
+                    return custom_prompts
+                end)(),
 
                 -- ================================================================
                 -- RULES (Auto-load project context files)

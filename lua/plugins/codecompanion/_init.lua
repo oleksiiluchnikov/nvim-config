@@ -1,9 +1,6 @@
 -- Configuration Module for CodeCompanion
 -- Setup: OpenRouter with Reasoning, Local Ollama, and Cloud Providers
 
-
-
-
 -- 5. PLUGIN SPECIFICATION
 return {
     {
