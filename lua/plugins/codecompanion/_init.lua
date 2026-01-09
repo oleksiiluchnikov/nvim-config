@@ -25,9 +25,6 @@ return {
         },
         opts = {
             ignore_warnings = true,
-            adapters = {
-                http = http_adapters,
-            },
             strategies = {
                 chat = {
                     adapter = 'copilot_gpt', -- Set your default here
@@ -65,16 +62,16 @@ return {
                 },
                 inline = {
                     layout = 'vertical',
+                    hl_group = 'CodeCompanionInline',
                 },
                 chat = {
                     show_references = true,
                     show_settings = false,
-                    -- IMPORTANT: These enable the reasoning/thought block display
-                    show_reasoning = true,
-                    fold_reasoning = true,
+                    show_reasoning = false,
+                    fold_reasoning = false,
                     icons = {
                         tool_success = '󰸞 ',
-                        chat_fold = ' ',
+                        chat_fold = ' ',
                     },
                     fold_context = true,
                 },

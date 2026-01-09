@@ -27,6 +27,7 @@ return {
             'rafamadriz/friendly-snippets',
             'mikavilpas/blink-ripgrep.nvim',
             'giuxtaposition/blink-cmp-copilot',
+            'Kaiser-Yang/blink-cmp-avante',
             'moyiz/blink-emoji.nvim',
             'folke/lazydev.nvim',
             'dmitmel/cmp-cmdline-history',
@@ -211,7 +212,7 @@ return {
                             source_name = {
                                 width = { max = 12 },
                                 text = function(ctx)
-                                    return ctx.source_name
+                                    return '[' .. ctx.source_name .. ']'
                                 end,
                                 highlight = 'BlinkCmpSource',
                             },
@@ -281,6 +282,8 @@ return {
             sources = {
                 default = {
                     'copilot',
+                    'avante',
+                    'supermaven',
                     'lsp',
                     'path',
                     'snippets',
@@ -347,13 +350,26 @@ return {
                         module = 'lazydev.integrations.blink',
                         score_offset = 50,
                     },
-                    copilot = {
-                        name = 'copilot',
-                        module = 'blink-cmp-copilot',
-                        score_offset = 400,
-                        min_keyword_length = 0,
-                        async = true,
-                    },
+                     copilot = {
+                         name = 'copilot',
+                         module = 'blink-cmp-copilot',
+                         score_offset = 400,
+                         min_keyword_length = 0,
+                         async = true,
+                     },
+                     avante = {
+                         name = 'Avante',
+                         module = 'blink-cmp-avante',
+                         score_offset = 300,
+                     },
+                     supermaven = {
+                         name = 'Supermaven',
+                         module = 'blink.compat.source',
+                         kind = 'Supermaven',
+                         enabled = true,
+                         async = true,
+                         score_offset = 350,
+                     },
                     cmdline = {
                         name = 'cmdline',
                         module = 'blink.cmp.sources.cmdline',

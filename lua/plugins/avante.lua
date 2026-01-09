@@ -198,9 +198,9 @@ return {
                 auto_set_keymaps = true,
                 auto_apply_diff_after_generation = false,
                 support_paste_from_clipboard = false,
-                minimize_diff = true, -- New: remove unchanged lines when applying code blocks
-                enable_token_counting = true, -- New: enable token counting
-                auto_approve_tool_permissions = false, -- New: tool permission handling
+                minimize_diff = true,
+                enable_token_counting = false,
+                auto_approve_tool_permissions = false,
             },
 
             mappings = {
@@ -284,21 +284,20 @@ return {
                 override_timeoutlen = 500,
             },
 
-            -- New: Selector configuration (replaces file_selector)
             selector = {
-                provider = 'fzf_lua', -- Updated from 'fzf' to 'fzf_lua'
+                provider = 'fzf_lua',
                 provider_opts = {},
             },
 
-            -- New: Input provider configuration
             input = {
-                provider = 'native', -- "native" | "dressing" | "snacks"
+                provider = 'native',
                 provider_opts = {},
             },
 
             suggestion = {
-                debounce = 600, -- Updated from 100 to 600
-                throttle = 600, -- Updated from 100 to 600
+                hl_group = 'AvanteSuggestion',
+                debounce = 600,
+                throttle = 600,
             },
         },
 

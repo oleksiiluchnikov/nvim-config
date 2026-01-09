@@ -86,19 +86,12 @@ vim.schedule(function()
 end)
 
 -- ============================================================================
---  6. AI COMPLETION ENGINE (Chain of Responsibility)
---  Optimized for "Blazingly Fast" execution by caching providers at startup.
+--  6. AI COMPLETION ENGINE
+--  Priority: Copilot → Supermaven → Avante → Blink Menu → Tab Fallback
+--  Performance: Agent modules cached at startup (zero pcall overhead)
 -- ============================================================================
 
----@class CompletionAgent
----@field name string
----@field available boolean
----@field accept function -- Accepts partial/word
----@field accept_full function -- Accepts the whole suggestion
-
--- local AI = {}
-
--- Helper to normalize termcodes (cached)
+-- Cached termcodes
 local term_tab = vim.api.nvim_replace_termcodes('<Tab>', true, true, true)
 
 ---@return boolean
@@ -107,87 +100,88 @@ local function is_whitespace_preceding()
     return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
 end
 
--- Define Agents (Blink, Supermaven, Copilot Lua, Copilot Vim, Avante)
--- We check availability ONCE during startup, not every keypress.
-
+-- Agent availability check (happens once at startup)
 local agents = {
-    blink = {
-        available = pcall(require, 'blink.cmp'),
-        module = package.loaded['blink.cmp'],
+    copilot = {
+        available = pcall(require, 'copilot.suggestion'),
+        mod = package.loaded['copilot.suggestion'],
     },
     supermaven = {
         available = pcall(require, 'supermaven-nvim.completion_preview'),
-        module = package.loaded['supermaven-nvim.completion_preview'],
+        mod = package.loaded['supermaven-nvim.completion_preview'],
     },
     avante = {
         available = pcall(require, 'avante.api'),
-        module = package.loaded['avante.api'],
+        mod = package.loaded['avante.api'],
     },
-    copilot_lua = {
-        available = pcall(require, 'copilot.suggestion'),
-        module = package.loaded['copilot.suggestion'],
-    },
-    copilot_vim = {
-        available = vim.fn.exists('*copilot#Accept') == 1,
+    blink = {
+        available = pcall(require, 'blink.cmp'),
+        mod = package.loaded['blink.cmp'],
     },
 }
 
--- Construct the Accept Strategy
----@param mode 'word' | 'full'
+-- Cache buf_utils module for smart_nav (loaded once)
+local buf_utils = package.loaded['config.utils.buf']
+if not buf_utils then
+    pcall(function()
+        buf_utils = require('config.utils.buf')
+    end)
+end
+
+---@param mode 'word' | 'full' | 'line'
 local function accept_ai_suggestion(mode)
-    -- 1. Blink CMP (Menu priority)
-    if agents.blink.available and agents.blink.module.is_menu_visible() then
-        return agents.blink.module.accept()
-    end
-
-    if
-        agents.copilot_lua.available and agents.copilot_lua.module.is_visible()
-    then
+    -- Priority 1: Copilot (smartest)
+    if agents.copilot.available and agents.copilot.mod.is_visible() then
         if mode == 'word' then
-            return agents.copilot_lua.module.accept_word()
+            agents.copilot.mod.accept_word()
+        elseif mode == 'line' then
+            agents.copilot.mod.accept_line()
         else
-            return agents.copilot_lua.module.accept()
+            agents.copilot.mod.accept()
         end
+        return
     end
 
-    -- 2. Supermaven
+    -- Priority 2: Supermaven (fastest)
     if
         agents.supermaven.available
-        and agents.supermaven.module.has_suggestion()
+        and agents.supermaven.mod.has_suggestion()
     then
         if mode == 'word' then
-            return agents.supermaven.module.on_accept_suggestion_word()
+            agents.supermaven.mod.on_accept_suggestion_word()
         else
-            return agents.supermaven.module.on_accept_suggestion()
+            -- Supermaven doesn't have accept_line, use full
+            agents.supermaven.mod.on_accept_suggestion()
+        end
+        return
+    end
+
+    -- Priority 3: Avante (bulletproof error handling)
+    if agents.avante.available and agents.avante.mod then
+        local ok, suggestion = pcall(agents.avante.mod.get_suggestion)
+        if
+            ok
+            and suggestion
+            and type(suggestion.is_visible) == 'function'
+            and suggestion:is_visible()
+        then
+            if type(suggestion.accept) == 'function' then
+                suggestion:accept()
+                return
+            end
         end
     end
 
-    -- 3. Avante
-    if agents.avante.available then
-        local suggestion = agents.avante.module.get_suggestion()
-        if suggestion and suggestion:is_visible() then
-            return suggestion:accept()
-        end
+    -- Priority 4: Blink Menu (if visible, accept selection)
+    if agents.blink.available and agents.blink.mod.is_visible() then
+        agents.blink.mod.accept()
+        return
     end
 
-    -- 4. Copilot (Lua)
-
-    -- 5. Copilot (Vimscript Legacy)
-    if agents.copilot_vim.available then
-        local key = vim.fn['copilot#Accept']('')
-        if key ~= '' then
-            return vim.api.nvim_feedkeys(key, 'i', true)
-        end
-    end
-
-    -- 6. Fallback (Indent/Tab)
-    -- Only performed if no AI suggestion was found
+    -- Fallback: Tab indentation
     if is_whitespace_preceding() then
-        return vim.fn.feedkeys(term_tab, 'n')
+        vim.fn.feedkeys(term_tab, 'n')
     end
-
-    -- Return true to indicate fallback to default behavior if mapped
-    return true
 end
 
 -- ============================================================================
@@ -198,34 +192,34 @@ end
 vim.keymap.set('n', '<Left>', '<C-w>h', { desc = 'Focus Left' })
 vim.keymap.set('n', '<Right>', '<C-w>l', { desc = 'Focus Right' })
 
--- AI Accept (Word/Partial)
+-- AI Accept Keymaps
 vim.keymap.set({ 'n', 'i', 'c', 't' }, '<C-y>', function()
     accept_ai_suggestion('word')
-end, { desc = 'AI: Accept Word/Selection' })
+end, { desc = 'AI: Accept Word' })
 
--- AI Accept (Full Line/Block)
 vim.keymap.set({ 'n', 'i', 'c', 't' }, '<C-j>', function()
     accept_ai_suggestion('full')
 end, { desc = 'AI: Accept Full Suggestion' })
 
--- Context-Aware Navigation
--- Moves selection in menu if open, otherwise smart-jumps code blocks.
+vim.keymap.set({ 'n', 'i', 'c', 't' }, '<C-l>', function()
+    accept_ai_suggestion('line')
+end, { desc = 'AI: Accept Line (Cursor to EOL)' })
+
+-- Context-Aware Navigation (Blink menu or smart buffer jump)
 local function smart_nav(direction)
     local is_down = direction == 'down'
 
-    -- Check Blink
-    if agents.blink.available and agents.blink.module.is_menu_visible() then
-        return is_down and agents.blink.module.select_next()
-            or agents.blink.module.select_prev()
+    -- Check Blink menu
+    if agents.blink.available and agents.blink.mod.is_visible() then
+        return is_down and agents.blink.mod.select_next()
+            or agents.blink.mod.select_prev()
     end
 
-    -- Fallback to smart buffer jump
-    -- We use pcall here in case config.utils.buf isn't loaded correctly
-    local ok, buf_utils = pcall(require, 'config.utils.buf')
-    if ok and buf_utils.jump_to_next_line_with_same_indent then
+    -- Fallback to smart buffer jump (using cached buf_utils)
+    if buf_utils and buf_utils.jump_to_next_line_with_same_indent then
         buf_utils.jump_to_next_line_with_same_indent(is_down, { 'end', '-' })
     else
-        -- Ultimate fallback to standard movement if utils fail
+        -- Ultimate fallback to standard movement
         local key = is_down and 'j' or 'k'
         vim.cmd('norm! ' .. key)
     end
