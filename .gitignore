@@ -1,2 +1,25 @@
 lazy-lock.json
 .DS_Store
+
+# Neovim swap files
+*.swp
+*.swo
+
+# Backup files
+*~
+*.bak
+
+# Temporary files
+*.tmp
+
+# Undo files
+undo/
+
+# Session files
+session/
+
+# Netrw history
+.netrwhist
+
+# Log files
+*.log
