@@ -234,39 +234,45 @@ return {
                     'show',
                     'show_documentation',
                     'hide_documentation',
+                    desc = 'Blink: Toggle completion and docs',
                 },
                 ['<C-e>'] = { 'hide', 'fallback' },
-                ['<C-y>'] = { 'select_and_accept' },
-                ['<C-p>'] = { 'select_prev', 'fallback' },
-                ['<C-n>'] = { 'select_next', 'fallback' },
-                ['<C-b>'] = { 'scroll_documentation_up', 'fallback' },
-                ['<C-f>'] = { 'scroll_documentation_down', 'fallback' },
-                ['<Tab>'] = { 'snippet_forward', 'fallback' },
-                ['<S-Tab>'] = { 'snippet_backward', 'fallback' },
+                ['<C-y>'] = { 'select_and_accept', desc = 'Blink: Accept selection' },
+                ['<C-p>'] = { 'select_prev', 'fallback', desc = 'Blink: Previous item' },
+                ['<C-n>'] = { 'select_next', 'fallback', desc = 'Blink: Next item' },
+                ['<C-b>'] = { 'scroll_documentation_up', 'fallback', desc = 'Blink: Scroll docs up' },
+                ['<C-f>'] = { 'scroll_documentation_down', 'fallback', desc = 'Blink: Scroll docs down' },
+                ['<Tab>'] = { 'snippet_forward', 'fallback', desc = 'Blink: Snippet forward' },
+                ['<S-Tab>'] = { 'snippet_backward', 'fallback', desc = 'Blink: Snippet backward' },
                 ['<A-1>'] = {
                     function(cmp)
                         cmp.accept({ index = 1 })
                     end,
+                    desc = 'Blink: Accept item 1',
                 },
                 ['<A-2>'] = {
                     function(cmp)
                         cmp.accept({ index = 2 })
                     end,
+                    desc = 'Blink: Accept item 2',
                 },
                 ['<A-3>'] = {
                     function(cmp)
                         cmp.accept({ index = 3 })
                     end,
+                    desc = 'Blink: Accept item 3',
                 },
                 ['<A-4>'] = {
                     function(cmp)
                         cmp.accept({ index = 4 })
                     end,
+                    desc = 'Blink: Accept item 4',
                 },
                 ['<A-5>'] = {
                     function(cmp)
                         cmp.accept({ index = 5 })
                     end,
+                    desc = 'Blink: Accept item 5',
                 },
             },
 
