@@ -23,3 +23,6 @@ session/
 
 # Log files
 *.log
+
+# Scratch/test files
+test.lua

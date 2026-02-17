@@ -70,10 +70,25 @@ end
 --- local selection = get_visual_selection()
 --- assert(selection:match('^%w+://'))
 --- ```
---- @return string
+--- @return table {text: string, start_line: integer, start_col: integer, end_line: integer, end_col: integer}
 function M.get_visual_selection()
     local _, lnum_start, col_start = unpack(vim.fn.getpos('v')) -- start of visual selection
     local _, lnum_end, col_end = unpack(vim.fn.getpos('.')) -- end of visual selection
+    -- Convert to 0-based indexing; col_end stays the same as `nvim_buf_get_text` includes the column end index itself
+    lnum_start = lnum_start - 1
+    lnum_end = lnum_end - 1
+    col_start = col_start - 1
+    col_end = col_end + 3
+
+    -- Handle reverse visual selection by swapping start and end positions
+    if
+        lnum_start > lnum_end
+        or (lnum_start == lnum_end and col_start > col_end)
+    then
+        lnum_start, lnum_end = lnum_end, lnum_start
+        col_start, col_end = col_end, col_start + 1
+    end
+
     local range_text = vim.api.nvim_buf_get_text(
         0,
         lnum_start,
@@ -82,8 +97,14 @@ function M.get_visual_selection()
         col_end,
         {}
     )
-    local selection = table.concat(range_text, '\n')
-    return selection
+    local text = table.concat(range_text, '\n')
+    return {
+        text = text,
+        start_line = lnum_start,
+        start_col = col_start,
+        end_line = lnum_end,
+        end_col = col_end,
+    }
 end
 --- Jump to next line with same indentation level
 --- @param down boolean

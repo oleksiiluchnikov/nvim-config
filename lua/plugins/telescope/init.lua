@@ -158,6 +158,7 @@ return {
                 'configs',
                 'avante',
                 'vault',
+                -- 'airtable',
                 'prompts',
                 'llm_models',
                 'luasnip',

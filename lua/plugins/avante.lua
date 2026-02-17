@@ -5,7 +5,7 @@ return {
         version = false, -- Important: Never set this to "*"!
         opts = {
             ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-            provider = 'gemini_3_flash', -- Updated: The default provider
+            provider = 'copilot', -- Updated: The default provider
             ---@alias Mode "agentic" | "legacy"
             mode = 'agentic', -- New: The default mode for interaction
             auto_suggestions_provider = 'copilot', -- For auto-suggestions
@@ -23,10 +23,6 @@ return {
                 ---@type AvanteProvider
                 copilot = {
                     timeout = 5000,
-                    extra_request_body = {
-                        temperature = 0.75, -- Updated default
-                        max_tokens = 4096,
-                    },
                 },
                 openai = {
                     endpoint = 'https://openrouter.ai/api/v1',
@@ -203,53 +199,12 @@ return {
                 auto_approve_tool_permissions = false,
             },
 
-            mappings = {
-                diff = {
-                    ours = 'co',
-                    theirs = 'ct',
-                    all_theirs = 'ca',
-                    both = 'cb',
-                    cursor = 'cc',
-                    next = ']x',
-                    prev = '[x',
-                },
-                suggestion = {
-                    accept = '<M-l>', -- New mappings
-                    next = '<M-]>',
-                    prev = '<M-[>',
-                    dismiss = '<C-]>',
-                },
-                jump = {
-                    next = ']]',
-                    prev = '[[',
-                },
-                submit = {
-                    normal = '<CR>',
-                    insert = '<C-s>',
-                },
-                cancel = { -- New: cancel mappings
-                    normal = { '<C-c>', '<Esc>', 'q' },
-                    insert = { '<C-c>' },
-                },
-                sidebar = {
-                    apply_all = 'A',
-                    apply_cursor = 'a',
-                    retry_user_request = 'r', -- New
-                    edit_user_request = 'e', -- New
-                    switch_windows = '<Tab>',
-                    reverse_switch_windows = '<S-Tab>',
-                    remove_file = 'd', -- New
-                    add_file = '@', -- New
-                    close = { '<Esc>', 'q' }, -- New
-                },
-            },
-
             hints = { enabled = true },
 
             windows = {
                 position = 'right',
                 wrap = true,
-                width = 30, -- Updated default from 50 to 30
+                width = 50, -- Updated default from 50 to 30
                 sidebar_header = {
                     enabled = true, -- Changed from false to true
                     align = 'center',

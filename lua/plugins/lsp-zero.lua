@@ -343,6 +343,8 @@ return {
                     vim.tbl_extend('force', opts, { desc = 'goto definition' })
                 )
 
+
+
                 vim.keymap.set(
                     'n',
                     'gt',

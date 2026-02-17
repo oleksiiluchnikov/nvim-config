@@ -13,7 +13,9 @@ M.snippets_path = vim.fn.stdpath('config') .. '/lua/snippets'
 local function load_ft_snippets(ft)
     local ft_path = M.snippets_path .. '/ft/' .. ft .. '.lua'
     if vim.fn.filereadable(ft_path) == 1 then
-        local ok, snips = pcall(dofile, ft_path)
+        local ok, snips = pcall(function()
+            return dofile(ft_path)
+        end)
         if ok and snips then
             require('luasnip').add_snippets(ft, snips, { key = ft })
         else
@@ -50,7 +52,9 @@ function M.reload_snippets()
     -- Load global snippets
     local all_path = M.snippets_path .. '/ft/all.lua'
     if vim.fn.filereadable(all_path) == 1 then
-        local ok, snips = pcall(dofile, all_path)
+        local ok, snips = pcall(function()
+            return dofile(all_path)
+        end)
         if ok and snips then
             require('luasnip').add_snippets('all', snips, { key = 'all' })
         end
@@ -84,7 +88,9 @@ function M.init()
     -- Load global snippets immediately
     local all_path = M.snippets_path .. '/ft/all.lua'
     if vim.fn.filereadable(all_path) == 1 then
-        local ok, snips = pcall(dofile, all_path)
+        local ok, snips = pcall(function()
+            return dofile(all_path)
+        end)
         if ok and snips then
             require('luasnip').add_snippets('all', snips, { key = 'all' })
         end

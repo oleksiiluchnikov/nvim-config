@@ -39,7 +39,8 @@ vim.opt.hlsearch = true -- Enable search highlighting
 vim.opt.incsearch = true -- Incremental search
 vim.opt.isfname:append('@-@') -- Include '@' in isfname
 vim.opt.updatetime = 50 -- Set the update time
-vim.opt.colorcolumn = '80' -- Highlight the 80th column
+vim.opt.colorcolumn = '128' -- Highlight the 80th column
+vim.opt.textwidth = 128 -- Set the text width to  120
 vim.opt.completeopt = { 'menuone', 'noselect', 'noinsert' } -- Set the complete options
 vim.opt.shortmess = vim.opt.shortmess + { c = true } -- Disable completion messages
 vim.opt.updatetime = 300 -- Set the update time

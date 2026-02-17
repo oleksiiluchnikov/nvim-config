@@ -1,6 +1,7 @@
 return {
     {
         'zbirenbaum/copilot.lua',
+        lazy = false,
         event = 'InsertEnter',
         init = function()
             vim.api.nvim_set_hl(0, 'CopilotSuggestion', { fg = '#ab47bc' })
@@ -14,6 +15,7 @@ return {
                 auto_trigger = true,
                 debounce = 50,
             },
+            copilot_model = 'anthropic/claude-haiku-4-5',
             filetypes = { ['*'] = true },
             copilot_node_command = 'node',
             server_opts_overrides = {},

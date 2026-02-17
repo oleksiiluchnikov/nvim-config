@@ -17,15 +17,22 @@ end
 local function safe_load(module_name)
     local status, err = pcall(require, module_name)
     if not status then
+        -- FIXME: Too noisy notifications during startup
+        -- vim.schedule(function()
+        --     vim.notify(
+        --         string.format(
+        --             '❌ Failed to load \'%s\':\n%s',
+        --             module_name,
+        --             err
+        --         ),
+        --         vim.log.levels.ERROR,
+        --         { title = 'Config Loader' }
+        --     )
+        -- end)
+
         vim.schedule(function()
-            vim.notify(
-                string.format(
-                    '❌ Failed to load \'%s\':\n%s',
-                    module_name,
-                    err
-                ),
-                vim.log.levels.ERROR,
-                { title = 'Config Loader' }
+            vim.print(
+                string.format('❌ Failed to load \'%s\': %s', module_name, err)
             )
         end)
     end
