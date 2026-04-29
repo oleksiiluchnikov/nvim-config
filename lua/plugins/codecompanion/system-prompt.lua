@@ -1,6 +1,6 @@
 -- System prompt generator for CodeCompanion AI assistant
 -- This module creates dynamic system prompts with system information for AI interactions
-local utils = require('config.utils')
+local utils = require('config.lib')
 
 --- Get OS uname information with fallback for older Neovim versions
 --- @return table OS information

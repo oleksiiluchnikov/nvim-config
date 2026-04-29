@@ -1,24 +1,22 @@
 return {
     {
-        'zbirenbaum/copilot.lua',
-        lazy = false,
+        'Exafunction/windsurf.nvim',
         event = 'InsertEnter',
-        init = function()
-            vim.api.nvim_set_hl(0, 'CopilotSuggestion', { fg = '#ab47bc' })
-            vim.api.nvim_set_hl(0, 'AvanteSuggestion', { fg = '#4caf50' })
-            vim.api.nvim_set_hl(0, 'CodeCompanionInline', { fg = '#2196f3' })
-        end,
-        opts = {
-            panel = { enabled = false },
-            suggestion = {
-                enabled = true,
-                auto_trigger = true,
-                debounce = 50,
-            },
-            copilot_model = 'anthropic/claude-haiku-4-5',
-            filetypes = { ['*'] = true },
-            copilot_node_command = 'node',
-            server_opts_overrides = {},
+        dependencies = {
+            'nvim-lua/plenary.nvim',
         },
+        config = function()
+            require('codeium').setup({
+                enable_cmp_source = false,
+                virtual_text = {
+                    enabled = true,
+                    idle_delay = 50,
+                    virtual_text_priority = 65535,
+                    -- Disable default keybindings — we use config/ai.lua
+                    -- with <C-y> (word), <C-j> (full), <C-l> (line)
+                    map_keys = false,
+                },
+            })
+        end,
     },
 }

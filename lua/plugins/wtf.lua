@@ -12,7 +12,7 @@ return {
             -- Default AI popup type
             popup_type = 'popup',
             -- An alternative way to set your API key
-            provider = 'copilot',
+            provider = 'openai',
             -- Set your preferred language for the response
             language = 'english',
             -- Any additional instructions

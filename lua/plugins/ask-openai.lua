@@ -1,6 +1,7 @@
 return {
     {
         'g0t4/ask-openai.nvim',
+        enabled = false, -- upstream bug: requires 'devtools.humanize' (author's personal module)
 
         -- include one of the following:
         -- 1. set opts, empty = defaults

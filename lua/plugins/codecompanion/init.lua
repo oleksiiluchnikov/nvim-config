@@ -1,5 +1,5 @@
 -- Configuration Module for CodeCompanion
--- Setup: OpenRouter with Reasoning, Local Ollama, and Cloud Providers
+-- Chat defaults to OpenCode ACP; inline keeps the HTTP adapter path.
 
 -- 5. PLUGIN SPECIFICATION
 return {
@@ -52,7 +52,10 @@ return {
                 },
                 strategies = {
                     chat = {
-                        adapter = 'openrouter', -- Set your default here
+                        adapter = {
+                            name = 'opencode',
+                            model = 'openai/gpt-5.4',
+                        },
                         roles = { user = 'Oleksii Luchnikov' },
                         slash_commands = {
                             ['image'] = {
@@ -66,7 +69,7 @@ return {
                         },
                     },
                     inline = {
-                        adapter = 'copilot',
+                        adapter = 'openai',
                     },
                 },
                 display = {
@@ -103,7 +106,7 @@ return {
                 mode = { 'n', 'v' },
             },
             {
-                '<leader>j',
+                '<leader>cc',
                 '<cmd>CodeCompanionChat Toggle<CR>',
                 desc = 'Toggle a chat buffer',
                 mode = { 'n', 'v' },
@@ -121,7 +124,7 @@ return {
                 mode = { 'v' },
             },
             {
-                '<leader>jl',
+                '<leader>co',
                 function()
                     require('codecompanion').last_chat()
                 end,
@@ -129,7 +132,7 @@ return {
                 mode = 'n',
             },
             {
-                '<leader>jr',
+                '<leader>cr',
                 function()
                     require('codecompanion').restore(vim.fn.get_bufnrs()[1])
                 end,

@@ -5,10 +5,10 @@ return {
         version = false, -- Important: Never set this to "*"!
         opts = {
             ---@alias Provider "claude" | "openai" | "azure" | "gemini" | "cohere" | "copilot" | string
-            provider = 'copilot', -- Updated: The default provider
+            provider = 'opencode',
             ---@alias Mode "agentic" | "legacy"
             mode = 'agentic', -- New: The default mode for interaction
-            auto_suggestions_provider = 'copilot', -- For auto-suggestions
+            auto_suggestions_provider = 'openai', -- Keep suggestions on HTTP
 
             acp_providers = {
                 ['opencode'] = {
@@ -20,13 +20,9 @@ return {
                 },
             },
             providers = {
-                ---@type AvanteProvider
-                copilot = {
-                    timeout = 5000,
-                },
                 openai = {
                     endpoint = 'https://openrouter.ai/api/v1',
-                    model = 'openai/gpt-5.1', -- Updated model
+                    model = 'openai/gpt-5.4', -- Updated model
                     api_key_name = 'OPENROUTER_API_KEY',
                     extra_request_body = {
                         timeout = 30000, -- New: for reasoning models
@@ -34,9 +30,9 @@ return {
                         reasoning_effort = 'high', -- New: for reasoning models
                     },
                 },
-                ['gpt-5'] = {
+                ['gpt-5.4'] = {
                     endpoint = 'https://openrouter.ai/api/v1',
-                    model = 'openai/gpt-5', -- Updated model
+                    model = 'openai/gpt-5.4', -- Updated model
                     api_key_name = 'OPENROUTER_API_KEY',
                     extra_request_body = {
                         timeout = 30000, -- New: for reasoning models
@@ -44,27 +40,6 @@ return {
                         reasoning_effort = 'high', -- New: for reasoning models
                     },
                 },
-                ['copilot-gemini'] = {
-                    __inherited_from = 'copilot',
-                    model = 'gemini-2.0-flash-001',
-                },
-                ['copilot-claude37-thought'] = {
-                    __inherited_from = 'copilot',
-                    model = 'claude-3.7-sonnet-thought',
-                },
-                ['copilot-claude35'] = {
-                    __inherited_from = 'copilot',
-                    model = 'claude-3.5-sonnet',
-                },
-                ['copilot-claude37'] = {
-                    __inherited_from = 'copilot',
-                    model = 'claude-3.7-sonnet',
-                },
-                ['copilot_gpt'] = {
-                    __inherited_from = 'copilot',
-                    model = 'gpt-5-mini',
-                },
-
                 -- deepseek provider (keeps its own model)
                 ['deepseek_14b'] = {
                     __inherited_from = 'ollama',
@@ -269,7 +244,7 @@ return {
             'stevearc/dressing.nvim', -- New: for input provider
             'folke/snacks.nvim', -- New: for input provider
             'nvim-tree/nvim-web-devicons',
-            'zbirenbaum/copilot.lua',
+            'Exafunction/windsurf.nvim',
             {
                 'HakonHarnes/img-clip.nvim',
                 event = 'VeryLazy',

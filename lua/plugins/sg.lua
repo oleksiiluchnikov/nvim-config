@@ -5,6 +5,10 @@
 return {
     {
         'sourcegraph/sg.nvim',
+        enabled = false, -- Disabled: cody-agent has broken GraphQL queries
+        -- (Cannot query field "codySubscription") that spam errors 24/7
+        -- in the headless server, generating a 154MB lsp.log.
+        -- Re-enable after sg.nvim ships an updated cody-agent.
         dependencies = {
             'nvim-lua/plenary.nvim',
         },
@@ -76,7 +80,7 @@ return {
             })
 
             local cody = require('sg.cody.commands')
-            local utils = require('config.utils')
+            local utils = require('config.lib')
 
             local function get_cody_answer()
                 local bufnr = vim.api.nvim_get_current_buf()
@@ -164,7 +168,7 @@ return {
                 'CodyImprovePromptInstruction',
                 function()
                     local start_line, end_line =
-                        require('config.utils.buf').get_selection_lines()
+                        require('config.lib.buf').get_selection_lines()
                     improve_prompt_instruction(start_line, end_line)
                 end,
                 {
@@ -276,7 +280,7 @@ return {
                 'CodyAddTypeAnnotations',
                 function()
                     local start_line, end_line =
-                        require('config.utils.buf').get_selection_lines()
+                        require('config.lib.buf').get_selection_lines()
                     add_lua_type_annotations(start_line, end_line)
                 end,
                 {
@@ -331,7 +335,7 @@ return {
                 if filetype == 'lua' then
                     filetype = filetype
                         .. ' '
-                        .. require('config.utils').get_version()
+                        .. require('config.lib').get_version()
                 end
                 local prompt_instruction = string.format(
                     instruction,
@@ -347,7 +351,7 @@ return {
 
             vim.api.nvim_create_user_command('CodyOptimizeCode', function()
                 optimize_lua_code(
-                    require('config.utils.buf').get_selection_lines()
+                    require('config.lib.buf').get_selection_lines()
                 )
             end, {
                 nargs = 0,
@@ -375,7 +379,7 @@ return {
                 'CodyImproveDocumentation',
                 function()
                     improve_documentation(
-                        require('config.utils.buf').get_selection_lines()
+                        require('config.lib.buf').get_selection_lines()
                     )
                 end,
                 {
@@ -406,7 +410,7 @@ return {
                 'CodySolveCommentedInstruction',
                 function()
                     local start_line, end_line =
-                        require('config.utils.buf').get_selection_lines()
+                        require('config.lib.buf').get_selection_lines()
                     -- The good prompt instruction for this task is:
                     local instruction = [=[
         Cody, implement the commented code snippet.
@@ -477,7 +481,7 @@ return {
 
             vim.api.nvim_create_user_command('CodyBlazingFast', function()
                 improve_performance(
-                    require('config.utils.buf').get_selection_lines()
+                    require('config.lib.buf').get_selection_lines()
                 )
             end, {
                 nargs = 0,
@@ -563,7 +567,7 @@ return {
             end
 
             vim.api.nvim_create_user_command('CodyAnnotate', function()
-                lua_annotate(require('config.utils.buf').get_selection_lines())
+                lua_annotate(require('config.lib.buf').get_selection_lines())
             end, {
                 nargs = 0,
                 range = true,
@@ -573,7 +577,7 @@ return {
                 'CodyRewriteCodeWithExample',
                 function()
                     local start_line, end_line =
-                        require('config.utils.buf').get_selection_lines()
+                        require('config.lib.buf').get_selection_lines()
                     local instruction = [=[
                 [[ Task: Rewrite the provided code snippet in Lua to make it more readable, maintainable, and efficient.
 
