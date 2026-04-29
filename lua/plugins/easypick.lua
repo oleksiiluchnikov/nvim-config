@@ -64,7 +64,7 @@ return {
     --
     --             local gen_remote_repos_command = [=[
     -- home_username=$(basename "$HOME")
-    -- email="oleksiiluchnikov@gmail.com"  # Adjust this to your email
+    -- email="user@example.com"  # Adjust this to your email
     --
     -- # Use -d for search depth, adjust as needed
     -- # Combine rg patterns
