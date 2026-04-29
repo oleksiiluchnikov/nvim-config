@@ -3,5 +3,6 @@ return {
     -- Enables refactoring using Treesitter
     {
         'nvim-treesitter/nvim-treesitter-refactor',
+        enabled = false,
     },
 }

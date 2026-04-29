@@ -34,4 +34,12 @@ return {
             })
         end,
     },
+    {
+        'echasnovski/mini.test',
+        version = false,
+        lazy = true, -- only loaded when running tests or explicitly required
+        config = function()
+            require('mini.test').setup()
+        end,
+    },
 }

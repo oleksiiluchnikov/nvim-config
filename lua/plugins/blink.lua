@@ -26,7 +26,7 @@ return {
         dependencies = {
             'rafamadriz/friendly-snippets',
             'mikavilpas/blink-ripgrep.nvim',
-            'giuxtaposition/blink-cmp-copilot',
+            -- 'giuxtaposition/blink-cmp-copilot', -- Replaced by windsurf.nvim virtual text
             'Kaiser-Yang/blink-cmp-avante',
             'moyiz/blink-emoji.nvim',
             'folke/lazydev.nvim',
@@ -287,12 +287,12 @@ return {
 
             sources = {
                 default = {
-                    'copilot',
                     'avante',
                     'lsp',
                     'path',
                     'snippets',
                     'buffer',
+                    'person_link',
                     'dates',
                     'ripgrep',
                     'emoji',
@@ -326,13 +326,30 @@ return {
                             end,
                         },
                     },
+                    person_link = {
+                        name = 'Person',
+                        module = 'config.blink.person_link_source',
+                        score_offset = 1000,
+                        min_keyword_length = 0,
+                        opts = {
+                            kind = 'person',
+                            label_format = '[[%s - %s]]',
+                            trigger_character = '@',
+                        },
+                    },
                     dates = {
                         name = 'Dates',
                         module = 'blink-dates',
                         score_offset = 1000,
                         opts = {
-                            weekday_separator = ' ',
-                            suggest_short_weekday = false,
+                            formats = {
+                                -- 2024-01-15 (inline refs, tasks, frontmatter)
+                                '%Y-%m-%d',
+                                -- 2024-01-15 Monday (daily notes, wikilinks)
+                                '%Y-%m-%d %A',
+                                -- 20240115143052 (frontmatter created/modified)
+                                { fmt = '%Y%m%d%H%M%S', current_time = true },
+                            },
                         },
                     },
                     ripgrep = {
@@ -355,13 +372,6 @@ return {
                         module = 'lazydev.integrations.blink',
                         score_offset = 50,
                     },
-                     copilot = {
-                         name = 'copilot',
-                         module = 'blink-cmp-copilot',
-                         score_offset = 400,
-                         min_keyword_length = 0,
-                         async = true,
-                     },
                      avante = {
                          name = 'Avante',
                          module = 'blink-cmp-avante',

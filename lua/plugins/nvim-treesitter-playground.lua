@@ -4,5 +4,6 @@ return {
     -- Acts as a Treesitter playground for Neovim
     {
         'nvim-treesitter/playground',
+        enabled = false,
     },
 }

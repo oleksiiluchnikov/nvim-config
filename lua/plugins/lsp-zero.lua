@@ -6,7 +6,6 @@ return {
             'neovim/nvim-lspconfig',
             'williamboman/mason.nvim',
             'williamboman/mason-lspconfig.nvim',
-            'netmute/ctags-lsp.nvim',
             'folke/lazydev.nvim',
         },
         config = function()
@@ -199,6 +198,20 @@ return {
                 lineFoldingOnly = true,
             }
 
+            local function enableInlayHints(bufnr)
+                if not vim.lsp.inlay_hint or not vim.lsp.inlay_hint.enable then
+                    return
+                end
+
+                if
+                    pcall(vim.lsp.inlay_hint.enable, true, { bufnr = bufnr })
+                then
+                    return
+                end
+
+                pcall(vim.lsp.inlay_hint.enable, bufnr, true)
+            end
+
             -- 4. MAIN ON_ATTACH
             local on_attach_lsp = function(client, bufnr)
                 -- Optional: notify when LSP attaches
@@ -209,10 +222,7 @@ return {
 
                 -- Inlay Hints
                 if client.supports_method('textDocument/inlayHint') then
-                    local ok, hints = pcall(require, 'lsp-inlayhints')
-                    if ok then
-                        hints.on_attach(client, bufnr)
-                    end
+                    enableInlayHints(bufnr)
                 end
 
                 -- Formatting
@@ -342,8 +352,6 @@ return {
                     vim.lsp.buf.definition,
                     vim.tbl_extend('force', opts, { desc = 'goto definition' })
                 )
-
-
 
                 vim.keymap.set(
                     'n',
@@ -903,6 +911,13 @@ return {
             })
 
             -- 6. MANUAL SETUP (Harper)
+            local harper_config_home = vim.env.XDG_CONFIG_HOME
+                or vim.fn.expand('~/.config')
+            local harper_user_dict_path = vim.fs.joinpath(
+                harper_config_home,
+                'harper-ls',
+                'dictionary.txt'
+            )
             local harper_available = vim.fn.executable('harper-ls') == 1
             if harper_available then
                 require('lspconfig').harper_ls.setup({
@@ -913,16 +928,25 @@ return {
                     capabilities = capabilities,
                     settings = {
                         ['harper-ls'] = {
-                            userDictPath = os.getenv('XDG_CONFIG_HOME')
-                                .. '/harper-ls/dictionary.txt',
+                            userDictPath = harper_user_dict_path,
+                            codeActions = {
+                                ForceStable = true,
+                            },
+                            markdown = {
+                                IgnoreLinkTitle = true,
+                            },
                             linters = {
                                 SpellCheck = true,
                                 SpelledNumbers = false,
-                                AnA = true,
+                                AnA = false,
                                 SentenceCapitalization = false,
                                 UnclosedQuotes = true,
-                                LongSentences = true,
-                                RepeatedWords = true,
+                                WrongQuotes = false,
+                                LongSentences = false,
+                                RepeatedWords = false,
+                                Spaces = false,
+                                Matcher = false,
+                                CorrectNumberSuffix = false,
                             },
                             diagnosticSeverity = 'hint',
                             dialect = 'American',
@@ -933,40 +957,7 @@ return {
             end
 
             -- 7. LSP STATUS
-            local lsp_status_ok, lsp_status = pcall(require, 'lsp-status')
-            if lsp_status_ok then
-                lsp_status.register_progress()
-                -- Add status to capabilities if using it
-                capabilities = vim.tbl_extend(
-                    'keep',
-                    capabilities,
-                    lsp_status.capabilities
-                )
-                lsp_status.config = {
-                    select_symbol = function(cursor_pos, symbol)
-                        if symbol.valueRange then
-                            local value_range = {
-                                ['start'] = {
-                                    character = 0,
-                                    line = vim.fn.byte2line(
-                                        symbol.valueRange[1]
-                                    ),
-                                },
-                                ['end'] = {
-                                    character = 0,
-                                    line = vim.fn.byte2line(
-                                        symbol.valueRange[2]
-                                    ),
-                                },
-                            }
-                            return require('lsp-status.util').in_range(
-                                cursor_pos,
-                                value_range
-                            )
-                        end
-                    end,
-                }
-            end
+            -- `lsp-status.nvim` is left disabled for Neovim 0.11+ compatibility.
         end,
     },
 }
