@@ -1,4 +1,4 @@
-local M
+local M = {}
 --- Converts lines of text based on a pattern and format
 --- @param lines table -- A table containing lines of text
 --- @param from_pattern string -- The pattern to match against each line
@@ -171,7 +171,7 @@ end
 ---
 --- @return LuaVersion
 --- ```lua
---- local lua_version = require('config.utils').get_lua_version()
+--- local lua_version = require('config.lib').get_lua_version()
 --- assert(lua_version == 'LuaJIT' or lua_version == 'Lua 5.1')
 --- ```
 function M.get_version()

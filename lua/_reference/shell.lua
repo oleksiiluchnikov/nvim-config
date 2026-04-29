@@ -76,7 +76,7 @@ end
 -- ---Exit VimShell terminal window (:VimShellPop)
 -- ---@description Exit VimShell terminal window (:VimShellPop)
 -- ---@usage functions.close_terminal()
--- function require('config.utils').close_terminal()
+-- function require('config.lib').close_terminal()
 --     -- functions.close_terminal()
 --     -- Function
 --     -- Exit VimShell terminal window (:VimShellPop)

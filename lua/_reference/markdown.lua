@@ -1,4 +1,4 @@
-local uri = require('config.utils').uri
+local uri = require('config.lib').uri
 local M = {}
 M.checkbox = {}
 -- Optimize string concatenation using table and table.concat
@@ -136,7 +136,7 @@ function M.checkbox.toggle_checkbox()
         new_line = M.checkbox.replace_inline_field_value(
             new_line,
             'date_updated',
-            os.date(date_ormat)
+            os.date(date_format)
         )
     end
 
@@ -147,7 +147,7 @@ function M.checkbox.toggle_checkbox()
             new_line = M.checkbox.add_inline_field(
                 new_line,
                 'date_completed',
-                os.date(date_ormat)
+                os.date(date_format)
             )
         else
             new_line = M.checkbox.replace_inline_field_value(

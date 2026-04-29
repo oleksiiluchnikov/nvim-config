@@ -75,7 +75,7 @@ return {
     --
     --                 style = {
     --                     scrollbar = '║',
-    --                     border = require('config.utils').styles.borders.solid,
+    --                     border = require('config.lib').styles.borders.solid,
     --                 },
     --
     --                 formatting = {
