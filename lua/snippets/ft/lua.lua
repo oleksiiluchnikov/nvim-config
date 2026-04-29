@@ -237,13 +237,13 @@ local {} = {{
 	})),
 
 	-- LuaSnip snippet template
-	s({ trig = 'snip', name = 'Snippet', dscr = 'LuaSnip snippet template' }, fmt([[
-s({ trig = '{}', name = '{}', dscr = '{}' }, fmt([[
+	s({ trig = 'snip', name = 'Snippet', dscr = 'LuaSnip snippet template' }, fmt([=[
+s({{ trig = '{}', name = '{}', dscr = '{}' }}, fmt([[
 {}
 ]], {{
 	{}
 }})),
-]], {
+]=], {
 		i(1, 'trigger'),
 		i(2, 'Name'),
 		i(3, 'Description'),

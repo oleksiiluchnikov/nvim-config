@@ -495,7 +495,7 @@ status: {}
             dscr = 'Prompt frontmatter',
         },
         fmt(
-            [[
+            [=[
         ---
         name: {}
         description: {}
@@ -518,7 +518,12 @@ status: {}
         ---
 
         ### Compiled Prompt
-        ]],
+
+        ![[{}]] ![[{}]]
+
+        Subject: ${{context.code}}
+        {}
+        ]=],
             {
                 i(1, 'Prompt Name'),
                 i(2, 'Description'),
@@ -532,6 +537,7 @@ status: {}
                 i(10, 'instructions'),
                 i(11, 'Role'),
                 i(12, 'Constraint'),
+                i(0),
             }
         )
     ),

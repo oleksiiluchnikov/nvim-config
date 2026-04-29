@@ -13,7 +13,7 @@ local previewers = require('telescope.previewers')
 
 -- Local references
 local layouts = require('plugins.telescope.layouts')
-local dir_utils = require('config.utils.directory')
+local dir_utils = require('config.lib.directory')
 
 -- Entry makers
 local entry_makers = {
@@ -1830,6 +1830,9 @@ end
 setup_keymaps()
 setup_char_mappings()
 setup_commands()
+
+-- Load AI pickers (skills + agents)
+require('plugins.telescope.ai')
 
 -- Setup highlights after colorscheme loads
 vim.schedule(function()

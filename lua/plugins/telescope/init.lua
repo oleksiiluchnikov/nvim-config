@@ -41,7 +41,7 @@ return {
                 dynamic_title_preview = true,
                 results_title = 'Results',
                 prompt_title = function()
-                    return require('config.utils.directory').get_root_dir()
+                    return require('config.lib.directory').get_root_dir()
                 end,
                 mappings = {
                     i = {
@@ -162,12 +162,17 @@ return {
                 'prompts',
                 'llm_models',
                 'luasnip',
+                'eagle',
             }
 
             for _, ext in ipairs(extensions) do
                 local ok, err = pcall(require('telescope').load_extension, ext)
                 if not ok then
-                    error('Error loading ' .. ext .. '\n\n' .. err)
+                    local message = tostring(err)
+                    local missing = message:match("doesn't exist or isn't installed")
+                    if not missing then
+                        error('Error loading ' .. ext .. '\n\n' .. message)
+                    end
                 end
             end
 

@@ -8,7 +8,7 @@ return {
             -- },
             dashboard = {
                 preset = {
-                    header = 'NVIM ' .. require('config.utils').version(),
+                    header = 'NVIM ' .. require('config.lib').version(),
           -- stylua: ignore
           ---@type snacks.dashboard.Item[]
           keys = {
@@ -17,14 +17,7 @@ return {
             { icon = " ", key = "s", desc = "restore session", section = "session" },
             { icon = " ", key = "f", desc = "find file", action = ":lua Snacks.dashboard.pick('files')" },
             { icon = " ", key = "o", desc = "smart open", action = ":lua Snacks.picker.smart()" },
-            { icon = " ", key = "g", desc = "find text", action = function()
-                if vim.g.lazyvim_picker == "telescope" then
-                  require("plugins.telescope.filter_grep").filter_grep()
-                else
-                  Snacks.dashboard.pick("live_grep")
-                end
-              end,
-            },
+            { icon = " ", key = "g", desc = "find text", action = ":lua Snacks.dashboard.pick('live_grep')" },
             { icon = " ", key = "c", desc = "config", action = ":lua Snacks.dashboard.pick('files', {cwd = vim.fn.stdpath('config')})", },
             { icon = "󰒲 ", key = "l", desc = "lazy", action = ":Lazy" },
             { icon = " ", key = "x", desc = "lazy extras", action = ":LazyExtras" },

@@ -1,5 +1,6 @@
 -- https://github.com/oleksiiluchnikov/eagle.nvim
+-- Use local dev directory for testing
 return { {
-    'oleksiiluchnikov/eagle.nvim',
-    branch = 'dev',
+    dir = '~/projects/eagle.nvim',
+    dev = true,
 } }
