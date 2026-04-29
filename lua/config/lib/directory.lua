@@ -21,7 +21,7 @@ function M.get_root_dir(path, opts)
     local cwd = vim.fn.getcwd()
 
     -- 3. Try Git root first (more reliable for directory changes)
-    local git = require('config.utils.git')
+    local git = require('config.lib.git')
     local git_root = git.get_root_dir(path)
     if git_root and git_root ~= '' then
         -- Check if cwd is within git_root or if we've explicitly changed directory

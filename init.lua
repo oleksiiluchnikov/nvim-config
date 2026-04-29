@@ -42,9 +42,10 @@ end
 -- 3. PRIORITY MODULE LOADING
 local core_modules = {
     'config.options',
+    'config.compat',
     'config.lazy',
     'config.autocmds',
-    'config.utils',
+    'config.lib',
     'config.ui',
     'config.remote',
     'config.keymaps',

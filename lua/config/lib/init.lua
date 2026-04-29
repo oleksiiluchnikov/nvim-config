@@ -1,10 +1,18 @@
 local M = {}
-function P(v)
+
+-- ============================================================================
+--  Debug Globals (intentionally in _G for REPL convenience)
+-- ============================================================================
+
+--- Pretty-print any value in a floating popup. Functions open Telescope live_grep.
+---@param v any
+---@return any
+function _G.P(v)
     local Popup = require('nui.popup')
     local text
 
     if type(v) == 'function' then
-        local tbl = require('config.utils').get_function_source(v)
+        local tbl = require('config.lib').get_function_source(v)
 
         if not tbl then
             vim.notify('Could not get function source', vim.log.levels.ERROR, {
@@ -72,18 +80,24 @@ function P(v)
     return v
 end
 
-function R(_package)
+--- Force-reload a module (clears package.loaded cache).
+---@param _package string
+---@return any
+function _G.R(_package)
     package.loaded[_package] = nil
     return require(_package)
 end
 
-function T()
+--- Print the treesitter node type at cursor.
+function _G.T()
     print(require('nvim-treesitter.ts_utils').get_node_at_cursor():type())
 end
 
---- Safe require for loading modules, with error handling
+--- Safe require with error notification.
+---@param module_name string
+---@return any|nil
 ---@diagnostic disable: lowercase-global
-function require_safe(module_name)
+function _G.require_safe(module_name)
     -- macro around pcall to handle errors and send logs
     -- it uses pcall to require the module and, if it fails, it sends a log
     -- message to the user.
@@ -114,11 +128,13 @@ end
 ---     vim.fn.sleep(1000)
 --- end
 ---
---- require('config.utils').benchmark("My Function", my_function)
+--- require('config.lib').benchmark("My Function", my_function)
 --- -- Output: "1.001s My Function"
 --- ```
---- @return nil
-function B(name, func)
+--- Benchmark a function and print elapsed time.
+---@param name string Description of what's being benchmarked
+---@param func function The function to benchmark
+function _G.B(name, func)
     local start_time = vim.fn.reltime()
     func()
     local elapsed_time = vim.fn.reltimestr(vim.fn.reltime(start_time))
@@ -126,7 +142,7 @@ function B(name, func)
 end
 
 -- Import UI utility functions for notifications and interface updates
-M.ui = require('config.utils.ui')
+M.ui = require('config.lib.ui')
 
 -- Get formatted Neovim version string
 -- Returns version with prerelease info if applicable (e.g., "0.11.0\ndev" or "0.10.1")

@@ -21,12 +21,12 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 })
 
 -- Load utilities
-require('config.utils.floatterminal').setup()
-require('config.utils.string_preview')
+require('config.lib.floatterminal').setup()
+require('config.lib.string_preview')
 require('scripts.diagnostics').setup()
 require('plugins.telescope.pickers')
 
 -- Create EditString command
 vim.api.nvim_create_user_command('EditString', function()
-    require('config.string_preview').edit_string()
+    require('config.lib.string_preview').edit_string()
 end, { desc = 'Edit long string in floating window' })

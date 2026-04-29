@@ -72,9 +72,11 @@ api.nvim_create_autocmd('TextYankPost', {
 
         local function animate_highlight()
             if step > max_steps then
-                api.nvim_buf_clear_namespace(buf_id, ns_id, row, row + 1)
-                timer:stop()
-                timer:close()
+                pcall(api.nvim_buf_clear_namespace, buf_id, ns_id, row, row + 1)
+                if not timer:is_closing() then
+                    timer:stop()
+                    timer:close()
+                end
                 return
             end
 
@@ -168,7 +170,6 @@ api.nvim_create_autocmd('WinLeave', {
 vim.api.nvim_create_user_command('CodeCompanionGlow', function()
     if vim.bo.filetype == 'codecompanion' then
         local lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
-        local content = table.concat(lines, '\n')
 
         -- Write to temp file and open with glow
         local tmpfile = vim.fn.tempname() .. '.md'
@@ -179,56 +180,4 @@ vim.api.nvim_create_user_command('CodeCompanionGlow', function()
     end
 end, { desc = 'Preview CodeCompanion chat in Glow' })
 
--- -- ===== AUTO-RELOAD FILES (Obsidian-friendly) =====
---
--- -- Enable auto-read globally
--- vim.opt.autoread = true
---
--- -- Check for file changes more frequently
--- vim.opt.updatetime = 1000
---
--- -- Auto-reload on various events
--- vim.api.nvim_create_autocmd({
---     'FocusGained',
---     'BufEnter',
---     'CursorHold',
---     'CursorHoldI',
--- }, {
---     pattern = '*',
---     callback = function()
---         if vim.fn.mode() ~= 'c' then
---             vim.cmd('silent! checktime')
---         end
---     end,
--- })
---
--- -- For markdown files (Obsidian), be extra aggressive
--- vim.api.nvim_create_autocmd('BufEnter', {
---     pattern = '*.md',
---     callback = function()
---         vim.opt_local.autoread = true
---         vim.opt_local.swapfile = false
---         vim.cmd('silent! checktime')
---     end,
--- })
---
--- -- Auto-reload without asking when file changes
--- vim.api.nvim_create_autocmd('FileChangedShell', {
---     pattern = '*',
---     callback = function()
---         if vim.fn.mode() ~= 'c' then
---             vim.cmd('echohl WarningMsg')
---             vim.cmd('echo "File changed, reloading..."')
---             vim.cmd('echohl None')
---             vim.cmd('edit!')
---         end
---     end,
--- })
---
--- -- Notify after reload
--- vim.api.nvim_create_autocmd('FileChangedShellPost', {
---     pattern = '*',
---     callback = function()
---         vim.notify('📝 File reloaded', vim.log.levels.INFO)
---     end,
--- })
+-- NOTE: Auto-reload (Obsidian-friendly) code moved to lua/_reference/autocmds_autoreload.lua
